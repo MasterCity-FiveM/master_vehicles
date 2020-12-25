@@ -404,10 +404,21 @@ ESX.RegisterServerCallback('esx_vehicleshop:retrieveJobVehicles', function(sourc
 	end)
 end)
 
+ESX.RegisterServerCallback('esx_vehicleshop:retrieveJobGradeVehicles', function(source, cb, type)
+	local xPlayer = ESX.GetPlayerFromId(source)
+	MySQL.Async.fetchAll('SELECT * FROM job_cars WHERE grade = @grade AND job = @job and type = @type', {
+		['@type'] = type,
+		['@job'] = xPlayer.job.name,
+		['@grade'] = xPlayer.job.grade_name
+	}, function(result)
+		cb(result)
+	end)
+end)
+
 RegisterNetEvent('esx_vehicleshop:setJobVehicleState')
 AddEventHandler('esx_vehicleshop:setJobVehicleState', function(plate, state)
 	local xPlayer = ESX.GetPlayerFromId(source)
-
+		
 	MySQL.Async.execute('UPDATE owned_vehicles SET `stored` = @stored WHERE plate = @plate AND job = @job', {
 		['@stored'] = state,
 		['@plate'] = plate,
