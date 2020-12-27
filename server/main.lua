@@ -412,29 +412,51 @@ ESX.RegisterServerCallback('esx_vehicleshop:retrieveJobGradeVehicles', function(
 		return
 	end
 	
+	local cars_key = xPlayer.job.grade_name
+	local hasSubJob = false
+	
+	if xPlayer.job.job_sub ~= nil and xPlayer.job.job_sub ~= ''  then
+		cars_key = xPlayer.job.grade_name .. '_' .. xPlayer.job.job_sub
+		hasSubJob = true
+	end
+	
 	if job_cars[xPlayer.job.name] == nil then
 		job_cars[xPlayer.job.name] = {}
 	end
 	
-	if job_cars[xPlayer.job.name][xPlayer.job.grade_name] == nil  then
-		job_cars[xPlayer.job.name][xPlayer.job.grade_name] = {}
+	if job_cars[xPlayer.job.name][cars_key] == nil  then
+		job_cars[xPlayer.job.name][cars_key] = {}
 	end
 	
-	if job_cars[xPlayer.job.name][xPlayer.job.grade_name][vtype] == nil  then
-		job_cars[xPlayer.job.name][xPlayer.job.grade_name][vtype] = {}
+	if job_cars[xPlayer.job.name][cars_key][vtype] == nil  then
+		job_cars[xPlayer.job.name][cars_key][vtype] = {}
 	else
-		cb(job_cars[xPlayer.job.name][xPlayer.job.grade_name][vtype])
+		cb(job_cars[xPlayer.job.name][cars_key][vtype])
 		return
 	end
 	
-	MySQL.Async.fetchAll('SELECT * FROM job_cars WHERE grade = @grade AND job = @job and type = @type', {
-		['@type'] = vtype,
-		['@job'] = xPlayer.job.name,
-		['@grade'] = xPlayer.job.grade_name
-	}, function(result)
-		job_cars[xPlayer.job.name][xPlayer.job.grade_name][vtype] = result
-		cb(result)
-	end)
+	if hasSubJob then
+		MySQL.Async.fetchAll('SELECT * FROM job_cars WHERE job = @job and type = @type and (grade = @grade OR grade = @job_sub)', {
+			['@type'] = vtype,
+			['@job'] = xPlayer.job.name,
+			['@grade'] = xPlayer.job.grade_name,
+			['@job_sub'] = xPlayer.job.job_sub
+		}, function(result)
+			job_cars[xPlayer.job.name][cars_key][vtype] = result
+			cb(result)
+			return
+		end)
+	else
+		MySQL.Async.fetchAll('SELECT * FROM job_cars WHERE grade = @grade AND job = @job and type = @type', {
+			['@type'] = vtype,
+			['@job'] = xPlayer.job.name,
+			['@grade'] = xPlayer.job.grade_name
+		}, function(result)
+			job_cars[xPlayer.job.name][cars_key][vtype] = result
+			cb(result)
+			return
+		end)
+	end
 end)
 
 RegisterNetEvent('esx_vehicleshop:setJobVehicleState')
