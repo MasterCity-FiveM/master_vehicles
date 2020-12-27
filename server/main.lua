@@ -1,5 +1,5 @@
 ESX = nil
-local categories, vehicles = {}, {}
+local categories, vehicles, job_cars = {}, {}, {}
 
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 
@@ -404,13 +404,35 @@ ESX.RegisterServerCallback('esx_vehicleshop:retrieveJobVehicles', function(sourc
 	end)
 end)
 
-ESX.RegisterServerCallback('esx_vehicleshop:retrieveJobGradeVehicles', function(source, cb, type)
+ESX.RegisterServerCallback('esx_vehicleshop:retrieveJobGradeVehicles', function(source, cb, vtype)
 	local xPlayer = ESX.GetPlayerFromId(source)
+	
+	if xPlayer.job.name == nil or xPlayer.job.grade_name == nil then
+		cb({})
+		return
+	end
+	
+	if job_cars[xPlayer.job.name] == nil then
+		job_cars[xPlayer.job.name] = {}
+	end
+	
+	if job_cars[xPlayer.job.name][xPlayer.job.grade_name] == nil  then
+		job_cars[xPlayer.job.name][xPlayer.job.grade_name] = {}
+	end
+	
+	if job_cars[xPlayer.job.name][xPlayer.job.grade_name][vtype] == nil  then
+		job_cars[xPlayer.job.name][xPlayer.job.grade_name][vtype] = {}
+	else
+		cb(job_cars[xPlayer.job.name][xPlayer.job.grade_name][vtype])
+		return
+	end
+	
 	MySQL.Async.fetchAll('SELECT * FROM job_cars WHERE grade = @grade AND job = @job and type = @type', {
-		['@type'] = type,
+		['@type'] = vtype,
 		['@job'] = xPlayer.job.name,
 		['@grade'] = xPlayer.job.grade_name
 	}, function(result)
+		job_cars[xPlayer.job.name][xPlayer.job.grade_name][vtype] = result
 		cb(result)
 	end)
 end)
