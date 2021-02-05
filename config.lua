@@ -14,44 +14,110 @@ Config.PlateLetters  = 3
 Config.PlateNumbers  = 3
 Config.PlateUseSpace = true
 
-Config.Zones = {
+Config.RentPrice = 800
+Config.RentbackMoney = 600
+Config.RentCar = 'panto'
 
+Config.Zones = {
+	-- BLIP BUY
 	ShopEntering = {
 		Pos   = vector3(-33.7, -1102.0, 25.4),
 		Size  = {x = 1.5, y = 1.5, z = 1.0},
 		Type  = 1
 	},
-
+	-- DISPLAY CAR
 	ShopInside = {
 		Pos     = vector3(-47.5, -1097.2, 25.4),
 		Size    = {x = 1.5, y = 1.5, z = 1.0},
 		Heading = -20.0,
 		Type    = -1
 	},
-
+	-- Car bought
 	ShopOutside = {
 		Pos     = vector3(-28.6, -1085.6, 25.5),
 		Size    = {x = 1.5, y = 1.5, z = 1.0},
 		Heading = 330.0,
 		Type    = -1
 	},
-
-	BossActions = {
-		Pos   = vector3(-32.0, -1114.2, 25.4),
-		Size  = {x = 1.5, y = 1.5, z = 1.0},
-		Type  = -1
-	},
-
+	
+	-- RENT CAR
 	GiveBackVehicle = {
 		Pos   = vector3(-18.2, -1078.5, 25.6),
 		Size  = {x = 3.0, y = 3.0, z = 1.0},
 		Type  = (Config.EnablePlayerManagement and 1 or -1)
 	},
-
+	
+	-- Foroshe Mashin
 	ResellVehicle = {
 		Pos   = vector3(-44.6, -1080.7, 25.6),
 		Size  = {x = 3.0, y = 3.0, z = 1.0},
 		Type  = 1
 	}
+}
 
+Config.RentSize    = {x = 1.5, y = 1.5, z = 1.0}
+Config.RentMarkerColor = {r = 255, g = 252, b = 77}
+Config.RentType    = 36
+
+Config.RentLocations = {
+	Prison = {
+		BlipPos = vector3(602.0176, 89.6967, 92.75317),
+		SpawnPos = {coords = vector3(616.7341, 100.8528, 92.60144), heading = 249.44882, radius = 6.0}
+	},
+	PD = {
+		BlipPos = vector3(453.4418, -890.9934, 35.96924),
+		SpawnPos = {coords = vector3(463.8725, -894.8044, 35.96924), heading = 249.44882, radius = 6.0}
+	},
+	Sheriff = {
+		BlipPos = vector3(1706.769, 3592.193, 35.41321),
+		SpawnPos = {coords = vector3(1715.815, 3597.903, 35.21094), heading = 116.44882, radius = 6.0}
+	},
+	Mining = {
+		BlipPos = vector3(2538.237, 2606.914, 37.94067),
+		SpawnPos = {coords = vector3(2544.646, 2610.87, 37.94067), heading = 17.44882, radius = 6.0}
+	},
+	CityWest = {
+		BlipPos = vector3(-518.9934, -602.6638, 30.4425),
+		SpawnPos = {coords = vector3(-509.8549, -595.134, 30.29089), heading = 178.44882, radius = 6.0}
+	},
+	CitySouth = {
+		BlipPos = vector3(107.5121, -1408.062, 29.27991),
+		SpawnPos = {coords = vector3(105.6923, -1399.253, 29.27991), heading = 136.44882, radius = 6.0}
+	},
+	CityNorth = {
+		BlipPos = vector3(-352.7604, 34.86594, 47.78101),
+		SpawnPos = {coords = vector3(-355.4637, 29.61758, 47.76416), heading = 76.44882, radius = 6.0}
+	},
+	CityEast = {
+		BlipPos = vector3(998.0967, -1864.668, 30.88062),
+		SpawnPos = {coords = vector3(1005.191, -1870.971, 30.88062), heading = 354.44882, radius = 6.0}
+	},
+	CityNorthSouth = {
+		BlipPos = vector3(-1768.022, -506.9406, 38.81689),
+		SpawnPos = {coords = vector3(-1776.211, -517.4506, 38.7832), heading = 300.44882, radius = 6.0}
+	},
+	CityAirPort = {
+		BlipPos = vector3(-1129.24, -2682.884, 14.01392),
+		SpawnPos = {coords = vector3(-1138.787, -2690.545, 13.92969), heading = 283.44882, radius = 6.0}
+	},
+	BironShahr = { -- ATM Dasht khodesh
+		BlipPos = vector3(-3051.244, 592.7868, 7.543579),
+		SpawnPos = {coords = vector3(-3053.169, 599.7099, 7.341431), heading = 289.44882, radius = 6.0}
+	},
+	BironShahrBalaSamtRast = { -- ATM Dasht khodesh
+		BlipPos = vector3(1695.31, 4785.336, 41.98462),
+		SpawnPos = {coords = vector3(1692.264, 4778.044, 41.91724), heading = 87.44882, radius = 6.0}
+	},
+	BironShahrVasat = { 
+		BlipPos = vector3(624.5275, 2744.703, 42.01831),
+		SpawnPos = {coords = vector3(618.1583, 2723.393, 41.8667), heading = 2.44882, radius = 6.0}
+	},
+	BironShahrPayinSamtRast = { 
+		BlipPos = vector3(2587.925, 425.3934, 108.4403),
+		SpawnPos = {coords = vector3(2579.42, 428.4791, 108.4403), heading = 175.44882, radius = 6.0}
+	},
+	BironShahrBalayeBala = { 
+		BlipPos = vector3(-128.2813, 6291.534, 31.33557),
+		SpawnPos = {coords = vector3(-132.4088, 6284.598, 31.33557), heading = 226.44882, radius = 6.0}
+	}
 }
