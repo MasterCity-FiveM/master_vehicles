@@ -1,4 +1,4 @@
-﻿Locales['en'] = {
+Locales['en'] = {
   -- global menus
   ['not_enough_in_society']   = 'there\'s not enough of ~r~that item~s~ in the society!', -- Useless, Age niaz shod add mikonm
   ['player_cannot_hold']      = 'you do ~r~not~s~ have enough ~y~free space~s~ in your inventory!', -- Useless, Age niaz shod add mikonm
