@@ -1,8 +1,8 @@
-Locales['en'] = {
+﻿Locales['en'] = {
   -- global menus
   ['not_enough_in_society']   = 'there\'s not enough of ~r~that item~s~ in the society!', -- Useless, Age niaz shod add mikonm
   ['player_cannot_hold']      = 'you do ~r~not~s~ have enough ~y~free space~s~ in your inventory!', -- Useless, Age niaz shod add mikonm
-  ['vehicle_belongs']         = 'یک ماشین با پلاک ~y~%s~s~ حالا متعلق به ~b~you~s~ است',
+  ['vehicle_belongs']         = 'یک ماشین با پلاک %s حالا متعلق به شما است',
   ['broke_company']           = 'you do not have enough money in the company account', -- Useless, Age niaz shod add mikonm
   ['license_missing']         = 'شما گواهینامه رانندگی ندارید',
   ['buy_vehicle_shop']        = 'آیا شما میخواهید %s را با قیمت $%s بخرید?',
@@ -33,7 +33,7 @@ Locales['en'] = {
   ['sell_menu']               = 'press ~INPUT_CONTEXT~ to sell your ~y~%s~s~ for ~g~$%s~s~', -- Useless, Age niaz shod add mikonm
   ['set_vehicle_owner_rent']  = 'rent vehicle', -- Useless, Age niaz shod add mikonm
   ['set_vehicle_owner_sell']  = 'sell vehicle', -- Useless, Age niaz shod add mikonm
-  ['shop_menu']               = 'دکمه ~INPUT_CONTEXT~ را برای دسترسی به منو فشار دهید', -- Useless, Age niaz shod add mikonm
+  ['shop_menu']               = 'دکمه E را برای دسترسی به منو فشار دهید', -- Useless, Age niaz shod add mikonm
   ['generic_shopitem']        = '$%s', -- Useless, Age niaz shod add mikonm
   ['vehicle_dealer']          = 'vehicle - Car Dealer', -- Useless, Age niaz shod add mikonm
   ['vehicle_menu']            = 'press ~INPUT_CONTEXT~ to give back the rented vehicle', -- Useless, Age niaz shod add mikonm

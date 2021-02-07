@@ -170,3 +170,40 @@ ESX.RegisterServerCallback('esx_vehicleshop:returnRentCar', function(source, cb,
 		cb(false)
 	end
 end)
+
+ESX.RegisterServerCallback('esx_vehicleshop:ChangeCarOwner', function(source, cb, plate, target)
+	local xPlayer = ESX.GetPlayerFromId(source)
+	local tPlayer = ESX.GetPlayerFromId(target)
+	
+	if xPlayer and tPlayer and plate ~= nil then
+	
+		if xPlayer.getMoney() < Config.ChangeOwnerPrice then
+			TriggerClientEvent("pNotify:SendNotification", source, { text = 'شما پول کافی برای انتقال خودرو را ندارید.', type = "error", timeout = 5000, layout = "bottomCenter"})
+			cb(false)
+			return
+		end
+		
+		MySQL.Async.fetchAll('SELECT * FROM owned_vehicles WHERE owner = @owner AND plate = @plate', {
+			['@owner'] = xPlayer.identifier,
+			['@plate'] = plate
+		}, function(result)
+			if result[1] then 
+				MySQL.Async.execute('UPDATE owned_vehicles SET `owner` = @newowner WHERE plate = @plate AND owner = @owner', {
+					['@owner'] = xPlayer.identifier,
+					['@plate'] = plate,
+					['@newowner'] = tPlayer.identifier
+				}, function(rowsChanged)
+					xPlayer.removeMoney(Config.ChangeOwnerPrice)
+					cb(1)
+				end)
+			else
+				cb(2)
+			end
+		end)
+		
+		return
+	end
+	
+	TriggerClientEvent("pNotify:SendNotification", source, { text = 'شما امکان تغییر مالکیت ندارید.', type = "error", timeout = 5000, layout = "bottomCenter"})
+	cb(false)
+end)

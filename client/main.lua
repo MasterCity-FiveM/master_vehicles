@@ -192,6 +192,10 @@ AddEventHandler('esx_vehicleshop:hasEnteredMarker', function(zone, isRent)
 			CurrentAction     = 'shop_menu'
 			CurrentActionMsg  = _U('shop_menu')
 			CurrentActionData = {}
+		elseif zone == 'ResellVehicle' then
+			CurrentAction     = 'changeowner_menu'
+			CurrentActionMsg  =  'جهت انتقال مالکیت خودرو لطفا E بزنید.'
+			CurrentActionData = {}
 		end
 	end
 	
@@ -217,9 +221,12 @@ AddEventHandler('master_keymap:e', function()
 			end
 		elseif CurrentAction == 'rent_menu' then
 			OpenRentMenu(CurrentActionData.zoneid)
+		elseif CurrentAction == 'changeowner_menu' then
+			ChangeCarOwner()
 		end	
 	end
 end)
+
 
 function GetAvailableVehicleSpawnPoint(Zone)
 	local spawnPoints = Config.RentLocations[Zone].SpawnPos
@@ -239,8 +246,8 @@ function OpenRentMenu(Zone)
 		title = 'اجاره خودرو',
 		align = 'top-right',
 		elements = {
-			{label = 'اجاره خودروˆ - [هزینه: ' .. Config.RentPrice .. '$]',  value = 'rent'},
-			{label = 'تحویل خودروˆ', value = 'deliver'}
+			{label = 'اجاره خودرو - [هزینه: ' .. Config.RentPrice .. '$]',  value = 'rent'},
+			{label = 'تحویل خودرو', value = 'deliver'}
 	}}, function(data, menu)
 		if data.current.value == 'rent' then
 			if GetAvailableVehicleSpawnPoint(Zone) then
@@ -448,42 +455,98 @@ function StartShopRestriction()
 end
 
 function StoreRentNearbyVehicle(playerCoords)
-	local vehicles = ESX.Game.GetVehiclesInArea(playerCoords, 10.0)
-	if #vehicles == 0 then
-		exports.pNotify:SendNotification({text = "خودرویی در نزدیکی شما نیست.", type = "error", timeout = 4000})
-		return
-	end
-	
-	local vehiclesTmp
-	for k,entity in ipairs(vehicles) do
-		vehiclesTmp = entity
-		break
-	end
-	
-	if vehiclesTmp == nil then
-		return
-	end
-	
-	local vehicleData = ESX.Game.GetVehicleProperties(vehiclesTmp)
-	if vehicleData and vehicleData.plate ~= nil then
-		ESX.TriggerServerCallback('esx_vehicleshop:returnRentCar', function(success)
-			if success then
-				local entity = vehiclesTmp
-				local attempt = 0
+	local ped = GetPlayerPed(-1)
 
-				while not NetworkHasControlOfEntity(entity) and attempt < 30.0 and DoesEntityExist(entity) do
-					Wait(100)
-					NetworkRequestControlOfEntity(entity)
-					attempt = attempt + 1
+    if (DoesEntityExist(ped) and not IsEntityDead(ped)) then 
+        local pos = GetEntityCoords(ped)
+
+        if (IsPedSittingInAnyVehicle(ped)) then 
+            local vehicle = GetVehiclePedIsIn(ped, false)
+			local vehicleData = ESX.Game.GetVehicleProperties(vehicle)
+			if vehicleData and vehicleData.plate ~= nil then
+				if (GetPedInVehicleSeat( vehicle, -1 ) == ped) then 
+					ESX.TriggerServerCallback('esx_vehicleshop:returnRentCar', function(success)
+						if success then
+							local entity = vehicle
+							local attempt = 0
+
+							while not NetworkHasControlOfEntity(entity) and attempt < 30.0 and DoesEntityExist(entity) do
+								Wait(100)
+								NetworkRequestControlOfEntity(entity)
+								attempt = attempt + 1
+							end
+
+							if DoesEntityExist(entity) and NetworkHasControlOfEntity(entity) then
+								ESX.Game.DeleteVehicle(entity)
+								return
+							end
+						end
+					end, vehicleData.plate, vehicle)
+				else 
+					exports.pNotify:SendNotification({text = "شما باید پشت فرمان باشید.", type = "error", timeout = 4000})
 				end
+			else
+				exports.pNotify:SendNotification({text = "شما امکان تحویل این خودرو را ندارید.", type = "error", timeout = 4000})
+				return
+			end
+        else
+            exports.pNotify:SendNotification({text = "شما باید در خودرو باشید.", type = "error", timeout = 4000})
+        end 
+    end
+end
 
-				if DoesEntityExist(entity) and NetworkHasControlOfEntity(entity) then
-					ESX.Game.DeleteVehicle(entity)
+function ChangeCarOwner()
+	local ped = GetPlayerPed(-1)
+
+    if (DoesEntityExist(ped) and not IsEntityDead(ped)) then 
+        if (IsPedSittingInAnyVehicle(ped)) then 
+            local vehicle = GetVehiclePedIsIn( ped, false )
+
+            if (GetPedInVehicleSeat(vehicle, -1) == ped) then 
+                local vehicleData = ESX.Game.GetVehicleProperties(vehicle)
+				if vehicleData and vehicleData.plate ~= nil then
+					local carPlate = vehicleData.plate
+					local closestPlayer, closestDistance = ESX.Game.GetClosestPlayer()
+					if closestPlayer ~= -1 and closestDistance <= 2.0 then
+						ESX.UI.Menu.CloseAll()
+						ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'chco_car', {
+							title = 'انتقال مالکیت خودرو',
+							align = 'top-right',
+							elements = {
+								{label = 'انصراف', value = 'cancel'},
+								{label = 'آیا میخواهید مالکیت خودرو را به (' .. GetPlayerServerId(closestPlayer) .. ') منتقل کنید؟ (هزینه: ' .. Config.ChangeOwnerPrice .. '$)',  value = 'changeowner'}
+						}}, function(data, menu)
+							if data.current.value == 'changeowner' then
+								ESX.TriggerServerCallback('esx_vehicleshop:ChangeCarOwner', function(status)
+									if status == 1 then
+										exports.pNotify:SendNotification({text = "انتقال خودرو انجام شد.", type = "success", timeout = 4000})
+									elseif status == 2 then
+										exports.pNotify:SendNotification({text = "شما مالک این خودرو نیستید.", type = "error", timeout = 4000})
+									end
+								end,  carPlate, GetPlayerServerId(closestPlayer))
+								menu.close()
+							else
+								menu.close()
+							end
+						end, function(menu, menu)
+							menu.close()
+						end)
+
+					else
+						exports.pNotify:SendNotification({text = "بازیکنی در نزدیکی شما نیست.", type = "error", timeout = 4000})
+						return
+					end
+				else
+					exports.pNotify:SendNotification({text = "شما امکان تغییر مالکیت این خودرو را ندارید.", type = "error", timeout = 4000})
 					return
 				end
-			end
-		end, vehicleData.plate, vehiclesTmp)
-	else
-		exports.pNotify:SendNotification({text = "امکان تحویل این خودرو وجود ندارد.", type = "error", timeout = 4000})
-	end
+            else
+                exports.pNotify:SendNotification({text = "شما باید پشت فرمان خودرو باشید.", type = "error", timeout = 4000})
+				return
+            end
+		else
+			exports.pNotify:SendNotification({text = "شما باید پشت فرمان خودرو باشید.", type = "error", timeout = 4000})
+			return
+        end 
+    end
 end

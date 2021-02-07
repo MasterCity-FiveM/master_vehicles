@@ -18,6 +18,8 @@ Config.RentPrice = 800
 Config.RentbackMoney = 600
 Config.RentCar = 'panto'
 
+Config.ChangeOwnerPrice = 500
+
 Config.Zones = {
 	-- BLIP BUY
 	ShopEntering = {
@@ -38,13 +40,6 @@ Config.Zones = {
 		Size    = {x = 1.5, y = 1.5, z = 1.0},
 		Heading = 330.0,
 		Type    = -1
-	},
-	
-	-- RENT CAR
-	GiveBackVehicle = {
-		Pos   = vector3(-18.2, -1078.5, 25.6),
-		Size  = {x = 3.0, y = 3.0, z = 1.0},
-		Type  = (Config.EnablePlayerManagement and 1 or -1)
 	},
 	
 	-- Foroshe Mashin
