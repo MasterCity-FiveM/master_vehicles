@@ -81,6 +81,22 @@ Citizen.CreateThread(function()
 		AddTextComponentSubstringPlayerName('Keraye Mashin')
 		EndTextCommandSetBlipName(blip)
 	end
+	
+	for k,v in pairs(Config.GarageLocations) do
+		if v.ShowBlipOnMap then
+			local blip = AddBlipForCoord(v.BlipPos)
+
+			SetBlipSprite (blip, 357)
+			SetBlipDisplay(blip, 4)
+			SetBlipColour(blip, 2)
+			SetBlipScale  (blip, 1.1)
+			SetBlipAsShortRange(blip, true)
+
+			BeginTextCommandSetBlipName('STRING')
+			AddTextComponentSubstringPlayerName('Garage')
+			EndTextCommandSetBlipName(blip)
+		end
+	end
 end)
 
 AddEventHandler('onResourceStop', function(resource)
@@ -100,9 +116,8 @@ AddEventHandler('onResourceStop', function(resource)
 end)
 
 AddEventHandler('esx_vehicleshop:hasExitedMarker', function(zone)
-	if not IsInShopMenu then
-		ESX.UI.Menu.CloseAll()
-	end
+	ESX.UI.Menu.CloseAll()
+	IsInShopMenu = false
 
 	CurrentAction = nil
 end)
@@ -129,7 +144,7 @@ Citizen.CreateThread(function()
 		Citizen.Wait(0)
 		local playerCoords = GetEntityCoords(PlayerPedId())
 		local isInMarker, letSleep, currentZone = false, true
-		local isRent = false
+		local ActionType = false
 
 		for k,v in pairs(Config.Zones) do
 			local distance = #(playerCoords - v.Pos)
@@ -158,7 +173,24 @@ Citizen.CreateThread(function()
 
 					if distance < Config.RentSize.x then
 						isInMarker, currentZone = true, k
-						isRent = true
+						ActionType = 1
+					end
+				end
+			end
+		end
+		
+		if letSleep then
+			for k,v in pairs(Config.GarageLocations) do
+				local distance = #(playerCoords - v.BlipPos)
+
+				if distance < Config.DrawDistance then
+					letSleep = false
+
+					DrawMarker(Config.GarageType, v.BlipPos, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.GarageSize.x, Config.GarageSize.y, Config.GarageSize.z, Config.GarageMarkerColor.r, Config.GarageMarkerColor.g, Config.GarageMarkerColor.b, 100, false, true, 2, false, nil, nil, false)
+
+					if distance < Config.RentSize.x then
+						isInMarker, currentZone = true, k
+						ActionType = 2
 					end
 				end
 			end
@@ -167,7 +199,7 @@ Citizen.CreateThread(function()
 		if (isInMarker and not HasAlreadyEnteredMarker) or (isInMarker and LastZone ~= currentZone) then
 			HasAlreadyEnteredMarker, LastZone = true, currentZone
 			LastZone = currentZone
-			TriggerEvent('esx_vehicleshop:hasEnteredMarker', currentZone, isRent)
+			TriggerEvent('esx_vehicleshop:hasEnteredMarker', currentZone, ActionType)
 		end
 
 		if not isInMarker and HasAlreadyEnteredMarker then
@@ -181,12 +213,8 @@ Citizen.CreateThread(function()
 	end
 end)
 
-AddEventHandler('esx_vehicleshop:hasEnteredMarker', function(zone, isRent)
-	if isRent then
-		CurrentAction     = 'rent_menu'
-		CurrentActionMsg  = 'جهت اجاره خودرو لطفا E بزنید.'
-		CurrentActionData = {zoneid = zone}
-	else
+AddEventHandler('esx_vehicleshop:hasEnteredMarker', function(zone, ActionType)
+	if ActionType == false then
 		CurrentIsRent = nil
 		if zone == 'ShopEntering' then
 			CurrentAction     = 'shop_menu'
@@ -197,6 +225,14 @@ AddEventHandler('esx_vehicleshop:hasEnteredMarker', function(zone, isRent)
 			CurrentActionMsg  =  'جهت انتقال مالکیت خودرو لطفا E بزنید.'
 			CurrentActionData = {}
 		end
+	elseif ActionType == 1 then
+		CurrentAction     = 'rent_menu'
+		CurrentActionMsg  = 'جهت اجاره خودرو لطفا E بزنید.'
+		CurrentActionData = {zoneid = zone}
+	elseif ActionType == 2 then
+		CurrentAction     = 'garage_menu'
+		CurrentActionMsg  = 'جهت دسترسی به گاراژ لطفا E بزنید.'
+		CurrentActionData = {zoneid = zone}
 	end
 	
 	if CurrentActionMsg ~= nil and IsInShopMenu == false then
@@ -221,12 +257,13 @@ AddEventHandler('master_keymap:e', function()
 			end
 		elseif CurrentAction == 'rent_menu' then
 			OpenRentMenu(CurrentActionData.zoneid)
+		elseif CurrentAction == 'garage_menu' then
+			OpenGarageMenu(CurrentActionData.zoneid)
 		elseif CurrentAction == 'changeowner_menu' then
 			ChangeCarOwner()
 		end	
 	end
 end)
-
 
 function GetAvailableVehicleSpawnPoint(Zone)
 	local spawnPoints = Config.RentLocations[Zone].SpawnPos
@@ -238,6 +275,203 @@ function GetAvailableVehicleSpawnPoint(Zone)
 		exports.pNotify:SendNotification({text = 'محل تحویل خودرو خالی نمیباشد.', type = "error", timeout = 4000})	
 		return false
 	end
+end
+
+function OpenGarageMenu(Zone)
+	IsInShopMenu = true
+	ESX.TriggerServerCallback('master_vehicles:getOwnedVehicles', function(cars)
+		if cars ~= nil then
+			local menuElements = {{label = 'انتقال خودرو به پارکینگ',  value = 'toGarage'}}
+			for k,v in pairs(cars) do
+				if v.vehicle.model ~= nil then 
+					if v.data.stored == 1 then
+						table.insert(menuElements, {label = 'تحویل خودرو: ' .. GetDisplayNameFromVehicleModel(v.vehicle.model) .. ' (' .. Config.GetCarPrice .. '$)',  value = v.vehicle.plate})
+					else
+						table.insert(menuElements, {label = 'تحویل خودرو: ' .. GetDisplayNameFromVehicleModel(v.vehicle.model) .. ' (' .. Config.FindCarPrice .. '$)',  value = v.vehicle.plate})
+					end
+				end
+			end
+			ESX.UI.Menu.CloseAll()
+			ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'car_list', {
+				title = 'گاراژ',
+				align = 'top-right',
+				elements = menuElements
+			}, function(data, menu)
+				if data.current.value == 'toGarage' then
+					StoreVehicleToGarage()
+					menu.close()
+				else
+					GetCarFromGarage(Zone, data.current.value)
+					menu.close()
+				end
+			end, function(menu, menu)
+				menu.close()
+			end)
+			
+		else
+			exports.pNotify:SendNotification({text = 'شما ماشینی در پارکینگ ندارید!', type = "error", timeout = 4000})
+		end
+	end, 'cars')
+end
+
+function GetCarFromGarage(Zone, plate)
+	local spawnPoints = Config.GarageLocations[Zone].SpawnPos
+	local found, foundSpawnPoint = false, nil
+	local spawnLocation = nil
+	
+	for k,v in pairs(spawnPoints) do
+		if ESX.Game.IsSpawnPointClear(v.coords, v.radius) then
+			spawnLocation = v
+			break
+		end
+	end
+	
+	if spawnLocation == nil then
+		exports.pNotify:SendNotification({text = 'محل تحویل خودرو خالی نمی باشد!', type = "error", timeout = 4000})
+		return
+	end
+	
+	ESX.TriggerServerCallback('master_vehicles:SpawnGarageCar', function(status, carData)
+		if status == 1 then
+			SpawnVehicle(carData, spawnLocation)
+		elseif status == 2 then
+			exports.pNotify:SendNotification({text = 'شما امکان تحویل گرفتن این خودرو را ندارید!', type = "error", timeout = 4000})
+		elseif status == 3 then
+			exports.pNotify:SendNotification({text = 'این خودرو به زودی به گاراژ منتقل میشود.', type = "error", timeout = 4000})
+		elseif status == 4 then
+			exports.pNotify:SendNotification({text = 'خودرو شما در حال انتقال به پارکینگ می باشد، لطفا صبور باشید.', type = "info", timeout = 4000})
+		end
+	end, plate)
+end
+
+function SpawnVehicle(vehicle, spawnLocation)
+	ESX.Game.SpawnVehicle(vehicle.model, spawnLocation.coords, spawnLocation.heading, function(callback_vehicle)
+		SetVehicleProperties(callback_vehicle, vehicle)
+		TaskWarpPedIntoVehicle(GetPlayerPed(-1), callback_vehicle, -1)
+	end)
+end
+
+function StoreVehicleToGarage()
+	local ped = GetPlayerPed(-1)
+	local playerCoords = GetEntityCoords(PlayerPedId())
+    if (DoesEntityExist(ped) and not IsEntityDead(ped)) then 
+        local pos = GetEntityCoords(ped)
+
+        if (IsPedSittingInAnyVehicle(ped)) then 
+            local vehicle = GetVehiclePedIsIn(ped, false)
+			local vehicleProps = GetVehicleProperties(vehicle)
+			if vehicleProps and vehicleProps.plate ~= nil then
+				if (GetPedInVehicleSeat( vehicle, -1 ) == ped) then 
+					ESX.TriggerServerCallback('master_vehicles:storeVehicle', function(success)
+						if success then
+							local entity = vehicle
+							local attempt = 0
+
+							exports.pNotify:SendNotification({text = "خودرو شما به گاراژ منتقل شد.", type = "success", timeout = 4000})
+							while not NetworkHasControlOfEntity(entity) and attempt < 30.0 and DoesEntityExist(entity) do
+								Wait(100)
+								NetworkRequestControlOfEntity(entity)
+								attempt = attempt + 1
+							end
+
+							if DoesEntityExist(entity) and NetworkHasControlOfEntity(entity) then
+								ESX.Game.DeleteVehicle(entity)
+								return
+							end
+						else
+							exports.pNotify:SendNotification({text = "شما امکان تحویل این خودرو به گاراژ را ندارید.", type = "error", timeout = 4000})
+						end
+					end, vehicleProps)
+				else 
+					exports.pNotify:SendNotification({text = "شما باید پشت فرمان باشید.", type = "error", timeout = 4000})
+				end
+			else
+				exports.pNotify:SendNotification({text = "شما امکان تحویل این خودرو را ندارید.", type = "error", timeout = 4000})
+				return
+			end
+        else
+            exports.pNotify:SendNotification({text = "شما باید در خودرو باشید.", type = "error", timeout = 4000})
+        end 
+    end
+end
+
+function SetVehicleProperties(vehicle, vehicleProps)
+    ESX.Game.SetVehicleProperties(vehicle, vehicleProps)
+
+    if vehicleProps["windows"] then
+        for windowId = 1, 9, 1 do
+            if vehicleProps["windows"][windowId] == false then
+                SmashVehicleWindow(vehicle, windowId)
+            end
+        end
+    end
+
+    if vehicleProps["tyres"] then
+        for tyreId = 1, 7, 1 do
+            if vehicleProps["tyres"][tyreId] ~= false then
+                SetVehicleTyreBurst(vehicle, tyreId, true, 1000)
+            end
+        end
+    end
+
+    if vehicleProps["doors"] then
+        for doorId = 0, 5, 1 do
+            if vehicleProps["doors"][doorId] ~= false then
+                SetVehicleDoorBroken(vehicle, doorId - 1, true)
+            end
+        end
+    end
+	if vehicleProps.vehicleHeadLight then SetVehicleHeadlightsColour(vehicle, vehicleProps.vehicleHeadLight) end
+end
+
+function GetVehicleProperties(vehicle)
+    if DoesEntityExist(vehicle) then
+        local vehicleProps = ESX.Game.GetVehicleProperties(vehicle)
+
+        vehicleProps["tyres"] = {}
+        vehicleProps["windows"] = {}
+        vehicleProps["doors"] = {}
+
+        for id = 1, 7 do
+            local tyreId = IsVehicleTyreBurst(vehicle, id, false)
+        
+            if tyreId then
+                vehicleProps["tyres"][#vehicleProps["tyres"] + 1] = tyreId
+        
+                if tyreId == false then
+                    tyreId = IsVehicleTyreBurst(vehicle, id, true)
+                    vehicleProps["tyres"][ #vehicleProps["tyres"]] = tyreId
+                end
+            else
+                vehicleProps["tyres"][#vehicleProps["tyres"] + 1] = false
+            end
+        end
+
+        for id = 1, 7 do
+            local windowId = IsVehicleWindowIntact(vehicle, id)
+
+            if windowId ~= nil then
+                vehicleProps["windows"][#vehicleProps["windows"] + 1] = windowId
+            else
+                vehicleProps["windows"][#vehicleProps["windows"] + 1] = true
+            end
+        end
+        
+        for id = 0, 5 do
+            local doorId = IsVehicleDoorDamaged(vehicle, id)
+        
+            if doorId then
+                vehicleProps["doors"][#vehicleProps["doors"] + 1] = doorId
+            else
+                vehicleProps["doors"][#vehicleProps["doors"] + 1] = false
+            end
+        end
+		vehicleProps["vehicleHeadLight"]  = GetVehicleHeadlightsColour(vehicle)
+
+        return vehicleProps
+	else
+		return nil
+    end
 end
 
 function OpenRentMenu(Zone)

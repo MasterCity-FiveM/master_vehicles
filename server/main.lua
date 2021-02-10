@@ -2,15 +2,13 @@ ESX = nil
 local categories, vehicles, job_cars = {}, {}, {}
 local RentCars = {}
 local LastRentID = 1
+local CarsNeedToFind = {}
+
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 
-function RemoveOwnedVehicle(plate)
-	MySQL.Async.execute('DELETE FROM owned_vehicles WHERE plate = @plate', {
-		['@plate'] = plate
-	})
-end
-
 MySQL.ready(function()
+	MySQL.Async.execute('UPDATE owned_vehicles SET stored = 1 WHERE stored = 0', {}, function (rowsChanged) end)
+	
 	MySQL.Async.fetchAll('SELECT * FROM vehicle_categories', {}, function(_categories)
 		categories = _categories
 
@@ -207,3 +205,120 @@ ESX.RegisterServerCallback('esx_vehicleshop:ChangeCarOwner', function(source, cb
 	TriggerClientEvent("pNotify:SendNotification", source, { text = 'شما امکان تغییر مالکیت ندارید.', type = "error", timeout = 5000, layout = "bottomCenter"})
 	cb(false)
 end)
+
+ESX.RegisterServerCallback('master_vehicles:getOwnedVehicles', function(source, cb, type)
+	local xPlayer = ESX.GetPlayerFromId(source)
+	OwnedCars = {}
+	if type == 'cars' then
+		local ownedAmbulanceCars = {}
+		MySQL.Async.fetchAll('SELECT * FROM owned_vehicles WHERE owner = @owner AND Type = @Type', {
+			['@owner'] = xPlayer.identifier,
+			['@Type'] = 'car'
+		}, function(data)
+			for _,v in pairs(data) do
+				local vehicle = json.decode(v.vehicle)
+				table.insert(OwnedCars, {vehicle = vehicle, data = v})
+			end
+			
+			cb(OwnedCars)
+		end)
+	elseif type == 'helis' then
+		local ownedAmbulanceHelis = {}
+		MySQL.Async.fetchAll('SELECT * FROM owned_vehicles WHERE owner = @owner AND Type = @Type', {
+			['@owner'] = xPlayer.identifier,
+			['@Type'] = 'helis'
+		}, function(data)
+			for _,v in pairs(data) do
+				local vehicle = json.decode(v.vehicle)
+				table.insert(OwnedCars, {vehicle = vehicle, data = v})
+			end
+			
+			cb(OwnedCars)
+		end)
+	end
+	
+end)
+
+-- Store Vehicles
+ESX.RegisterServerCallback('master_vehicles:storeVehicle', function (source, cb, vehicleProps)
+	local ownedCars = {}
+	local vehplate = vehicleProps.plate:match("^%s*(.-)%s*$")
+	local vehiclemodel = vehicleProps.model
+	local xPlayer = ESX.GetPlayerFromId(source)
+
+	MySQL.Async.fetchAll('SELECT * FROM owned_vehicles WHERE owner = @owner AND plate = @plate', {
+		['@owner'] = xPlayer.identifier,
+		['@plate'] = vehicleProps.plate
+	}, function (result)
+		if result[1] ~= nil then
+			local originalvehprops = json.decode(result[1].vehicle)
+			if originalvehprops.model == vehicleProps.model and vehicleProps.plate == originalvehprops.plate then
+				MySQL.Async.execute('UPDATE owned_vehicles SET vehicle = @vehicle, stored = 1 WHERE owner = @owner AND plate = @plate', {
+					['@owner'] = xPlayer.identifier,
+					['@vehicle'] = json.encode(vehicleProps),
+					['@plate'] = vehicleProps.plate
+				}, function (rowsChanged)
+					cb(true)
+				end)
+			else
+				print(('master_vehicles: %s attempted to Cheat! Tried Storing: %s | Original Vehicle: %s '):format(xPlayer.identifier, vehiclemodel, originalvehprops.model))
+				cb(false)
+			end
+		else
+			cb(false)
+		end
+	end)
+end)
+
+ESX.RegisterServerCallback('master_vehicles:SpawnGarageCar', function (source, cb, plate)
+	local xPlayer = ESX.GetPlayerFromId(source)
+
+	MySQL.Async.fetchAll('SELECT * FROM owned_vehicles WHERE owner = @owner AND plate = @plate', {
+		['@owner'] = xPlayer.identifier,
+		['@plate'] = plate
+	}, function (result)
+		if result[1] ~= nil then
+			if result[1].stored == 1 then
+				MySQL.Async.execute('UPDATE owned_vehicles SET stored = 0 WHERE owner = @owner AND plate = @plate', {
+					['@owner'] = xPlayer.identifier,
+					['@plate'] = plate
+				}, function (rowsChanged)
+					xPlayer.removeMoney(Config.GetCarPrice)
+					local vehicleData = json.decode(result[1].vehicle)
+					cb(1, vehicleData)
+				end)
+			else
+				FindCar(source, plate)
+				local plate_key = plate:gsub( " ", "_")
+				if CarsNeedToFind[plate_key] ~= nil then
+					cb(3, nil)
+				else
+					FindCar(source, plate)
+					cb(4, nil)
+				end
+			end
+		else
+			print(('master_vehicles: %s attempted to Cheat! Tried Getting: %s'):format(xPlayer.identifier, plate))
+			cb(2, nil)
+		end
+	end)
+end)
+
+function FindCar(source, plate)
+	Citizen.CreateThread(function()
+		local xPlayer = ESX.GetPlayerFromId(source)
+		local plate_key = plate:gsub( " ", "_")
+		if CarsNeedToFind[plate_key] ~= nil then
+			return
+		end
+		CarsNeedToFind[plate_key] = source
+		xPlayer.removeMoney(Config.FindCarPrice)
+		Citizen.Wait(60000)
+		CarsNeedToFind[plate_key] = nil
+		MySQL.Async.execute('UPDATE owned_vehicles SET stored = 1 WHERE owner = @owner AND plate = @plate', {
+			['@owner'] = xPlayer.identifier,
+			['@plate'] = plate
+		}, function (rowsChanged) end)
+		TriggerClientEvent("pNotify:SendNotification", source, { text = "خودرو شما با پلاک " .. plate .. " به گاراژ پارکینگ منتقل شد.", type = "info", timeout = 5000, layout = "bottomCenter"})
+	end)
+end

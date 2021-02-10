@@ -116,3 +116,39 @@ Config.RentLocations = {
 		SpawnPos = {coords = vector3(-132.4088, 6284.598, 31.33557), heading = 226.44882, radius = 6.0}
 	}
 }
+
+Config.GarageSize    = {x = 1.5, y = 1.5, z = 1.0}
+Config.GarageMarkerColor = {r = 66, g = 245, b = 149}
+Config.GarageType    = 36
+Config.GetCarPrice   = 100
+Config.FindCarPrice   = 1000
+
+Config.GarageLocations = {
+	Main = {
+		ShowBlipOnMap = true,
+		BlipPos = vector3(225.4549, -763.345, 30.81323),
+		SpawnPos = {
+			Spawn1 = { coords = vector3(219.2176, -768.8835, 30.81323), heading = 246.61418151855, radius = 6.0 },
+            Spawn2 = { coords = vector3(214.7209, -778.6285, 30.81323), heading = 246.61418151855, radius = 6.0 },
+            Spawn3 = { coords = vector3(237.5473, -795.5736, 30.81323), heading = 68.61418151855, radius = 6.0 },
+            Spawn4 = { coords = vector3(239.6176, -787.7143, 30.81323), heading = 68.61418151855, radius = 6.0 }
+		}
+	},
+    Sheriff = {
+		ShowBlipOnMap = true,
+		BlipPos = vector3(1737.785, 3718.958, 34.03149),
+		SpawnPos = {
+			Spawn1 = { coords = vector3(1728.725, 3714.316, 34.16626), heading = 17.007873535156, radius = 6.0 },
+			Spawn2 = { coords = vector3(1722.198, 3711.903, 34.23364), heading = 17.007873535156, radius = 6.0 }
+
+		}
+	},
+    BankSheriff = {
+		ShowBlipOnMap = true,
+		BlipPos = vector3(120.567, 6615.93, 31.84106),
+		SpawnPos = {
+			Spawn1 = { coords = vector3(117.5868, 6599.301, 32.00952), heading = 274.96063232422, radius = 6.0 },
+			Spawn2 = { coords = vector3(125.7785, 6589.583, 32.00952), heading = 274.96063232422, radius = 6.0 }
+		}
+	}
+}
