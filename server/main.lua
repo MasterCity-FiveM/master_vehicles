@@ -319,6 +319,6 @@ function FindCar(source, plate)
 			['@owner'] = xPlayer.identifier,
 			['@plate'] = plate
 		}, function (rowsChanged) end)
-		TriggerClientEvent("pNotify:SendNotification", source, { text = "خودرو شما با پلاک " .. plate .. " به گاراژ پارکینگ منتقل شد.", type = "info", timeout = 5000, layout = "bottomCenter"})
+		TriggerClientEvent("pNotify:SendNotification", source, { text = "خودرو شما با پلاک " .. plate .. " به پارکینگ گاراژ منتقل شد.", type = "info", timeout = 5000, layout = "bottomCenter"})
 	end)
 end
