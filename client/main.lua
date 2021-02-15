@@ -18,6 +18,7 @@ Citizen.CreateThread(function()
 	ESX.TriggerServerCallback('esx_vehicleshop:getVehicles', function(vehicles)
 		Vehicles = vehicles
 	end)
+	
 end)
 
 function getVehicleLabelFromModel(model)
@@ -142,73 +143,75 @@ end
 Citizen.CreateThread(function()
 	while true do
 		Citizen.Wait(0)
-		local playerCoords = GetEntityCoords(PlayerPedId())
-		local isInMarker, letSleep, currentZone = false, true
-		local ActionType = false
+		if IsInShopMenu == false then
+			local playerCoords = GetEntityCoords(PlayerPedId())
+			local isInMarker, letSleep, currentZone = false, true
+			local ActionType = false
 
-		for k,v in pairs(Config.Zones) do
-			local distance = #(playerCoords - v.Pos)
-
-			if distance < Config.DrawDistance then
-				letSleep = false
-
-				if v.Type ~= -1 then
-					DrawMarker(v.Type, v.Pos, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, v.Size.x, v.Size.y, v.Size.z, Config.MarkerColor.r, Config.MarkerColor.g, Config.MarkerColor.b, 100, false, true, 2, false, nil, nil, false)
-				end
-
-				if distance < v.Size.x then
-					isInMarker, currentZone = true, k
-				end
-			end
-		end
-		
-		if letSleep then
-			for k,v in pairs(Config.RentLocations) do
-				local distance = #(playerCoords - v.BlipPos)
+			for k,v in pairs(Config.Zones) do
+				local distance = #(playerCoords - v.Pos)
 
 				if distance < Config.DrawDistance then
 					letSleep = false
 
-					DrawMarker(Config.RentType, v.BlipPos, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.RentSize.x, Config.RentSize.y, Config.RentSize.z, Config.RentMarkerColor.r, Config.RentMarkerColor.g, Config.RentMarkerColor.b, 100, false, true, 2, false, nil, nil, false)
+					if v.Type ~= -1 then
+						DrawMarker(v.Type, v.Pos, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, v.Size.x, v.Size.y, v.Size.z, Config.MarkerColor.r, Config.MarkerColor.g, Config.MarkerColor.b, 100, false, true, 2, false, nil, nil, false)
+					end
 
-					if distance < Config.RentSize.x then
+					if distance < v.Size.x then
 						isInMarker, currentZone = true, k
-						ActionType = 1
 					end
 				end
 			end
-		end
-		
-		if letSleep then
-			for k,v in pairs(Config.GarageLocations) do
-				local distance = #(playerCoords - v.BlipPos)
+			
+			if letSleep then
+				for k,v in pairs(Config.RentLocations) do
+					local distance = #(playerCoords - v.BlipPos)
 
-				if distance < Config.DrawDistance then
-					letSleep = false
+					if distance < Config.DrawDistance then
+						letSleep = false
 
-					DrawMarker(Config.GarageType, v.BlipPos, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.GarageSize.x, Config.GarageSize.y, Config.GarageSize.z, Config.GarageMarkerColor.r, Config.GarageMarkerColor.g, Config.GarageMarkerColor.b, 100, false, true, 2, false, nil, nil, false)
+						DrawMarker(Config.RentType, v.BlipPos, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.RentSize.x, Config.RentSize.y, Config.RentSize.z, Config.RentMarkerColor.r, Config.RentMarkerColor.g, Config.RentMarkerColor.b, 100, false, true, 2, false, nil, nil, false)
 
-					if distance < Config.RentSize.x then
-						isInMarker, currentZone = true, k
-						ActionType = 2
+						if distance < Config.RentSize.x then
+							isInMarker, currentZone = true, k
+							ActionType = 1
+						end
 					end
 				end
 			end
-		end
+			
+			if letSleep then
+				for k,v in pairs(Config.GarageLocations) do
+					local distance = #(playerCoords - v.BlipPos)
 
-		if (isInMarker and not HasAlreadyEnteredMarker) or (isInMarker and LastZone ~= currentZone) then
-			HasAlreadyEnteredMarker, LastZone = true, currentZone
-			LastZone = currentZone
-			TriggerEvent('esx_vehicleshop:hasEnteredMarker', currentZone, ActionType)
-		end
+					if distance < Config.DrawDistance then
+						letSleep = false
 
-		if not isInMarker and HasAlreadyEnteredMarker then
-			HasAlreadyEnteredMarker = false
-			TriggerEvent('esx_vehicleshop:hasExitedMarker', LastZone)
-		end
+						DrawMarker(Config.GarageType, v.BlipPos, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.GarageSize.x, Config.GarageSize.y, Config.GarageSize.z, Config.GarageMarkerColor.r, Config.GarageMarkerColor.g, Config.GarageMarkerColor.b, 100, false, true, 2, false, nil, nil, false)
 
-		if letSleep then
-			Citizen.Wait(2000)
+						if distance < Config.RentSize.x then
+							isInMarker, currentZone = true, k
+							ActionType = 2
+						end
+					end
+				end
+			end
+
+			if (isInMarker and not HasAlreadyEnteredMarker) or (isInMarker and LastZone ~= currentZone) then
+				HasAlreadyEnteredMarker, LastZone = true, currentZone
+				LastZone = currentZone
+				TriggerEvent('esx_vehicleshop:hasEnteredMarker', currentZone, ActionType)
+			end
+
+			if not isInMarker and HasAlreadyEnteredMarker then
+				HasAlreadyEnteredMarker = false
+				TriggerEvent('esx_vehicleshop:hasExitedMarker', LastZone)
+			end
+
+			if letSleep then
+				Citizen.Wait(2000)
+			end
 		end
 	end
 end)
@@ -784,3 +787,12 @@ function ChangeCarOwner()
         end 
     end
 end
+
+Citizen.CreateThread(function()
+	RequestIpl('shr_int') -- Load walls and floor
+
+	local interiorID = 7170
+	LoadInterior(interiorID)
+	EnableInteriorProp(interiorID, 'csr_beforeMission') -- Load large window
+	RefreshInterior(interiorID)
+end)
