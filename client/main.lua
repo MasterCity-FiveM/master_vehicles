@@ -119,7 +119,6 @@ end)
 AddEventHandler('esx_vehicleshop:hasExitedMarker', function(zone)
 	ESX.UI.Menu.CloseAll()
 	IsInShopMenu = false
-
 	CurrentAction = nil
 end)
 
@@ -281,16 +280,15 @@ function GetAvailableVehicleSpawnPoint(Zone)
 end
 
 function OpenGarageMenu(Zone)
-	IsInShopMenu = true
 	ESX.TriggerServerCallback('master_vehicles:getOwnedVehicles', function(cars)
 		if cars ~= nil then
 			local menuElements = {{label = 'انتقال خودرو به پارکینگ',  value = 'toGarage'}}
 			for k,v in pairs(cars) do
 				if v.vehicle.model ~= nil then 
 					if v.data.stored == 1 then
-						table.insert(menuElements, {label = 'تحویل خودرو: ' .. GetDisplayNameFromVehicleModel(v.vehicle.model) .. ' (' .. Config.GetCarPrice .. '$)',  value = v.vehicle.plate})
+						table.insert(menuElements, {label = 'تحویل خودرو: <span style="color: #ff96ef">' .. GetDisplayNameFromVehicleModel(v.vehicle.model) .. '</span> - <span style="color: #85fffb">' .. v.vehicle.plate .. '</span> <span style="color: #8cff7a">(' .. Config.GetCarPrice .. '$)</span>',  value = v.vehicle.plate})
 					else
-						table.insert(menuElements, {label = 'تحویل خودرو: ' .. GetDisplayNameFromVehicleModel(v.vehicle.model) .. ' (' .. Config.FindCarPrice .. '$)',  value = v.vehicle.plate})
+						table.insert(menuElements, {label = 'تحویل خودرو: <span style="color: #ff96ef">' .. GetDisplayNameFromVehicleModel(v.vehicle.model) .. '</span> - <span style="color: #85fffb">' .. v.vehicle.plate .. '</span> <span style="color: #8cff7a">(' .. Config.FindCarPrice .. '$)</span>',  value = v.vehicle.plate})
 					end
 				end
 			end
