@@ -209,7 +209,7 @@ Citizen.CreateThread(function()
 			end
 
 			if letSleep then
-				Citizen.Wait(2000)
+				Citizen.Wait(5000)
 			end
 		end
 	end
