@@ -333,6 +333,11 @@ end)
 RegisterServerEvent("car_lock:CheckOwnership")
 AddEventHandler("car_lock:CheckOwnership", function(vehNet, plate)
     local src = source
+	
+	if plate == nil then
+		TriggerClientEvent("car_lock:ToggleOutsideLock", src, vehNet, false)
+	end
+	
     local plate = string.upper(plate)
     for i = 1, #vehicleOwners do
         if vehicleOwners[i].netid == vehNet then
