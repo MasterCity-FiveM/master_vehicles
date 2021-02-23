@@ -3,7 +3,7 @@ local categories, vehicles, job_cars = {}, {}, {}
 local RentCars = {}
 local LastRentID = 1
 local CarsNeedToFind = {}
-
+local vehicleOwners = {}
 TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 
 MySQL.ready(function()
@@ -322,3 +322,26 @@ function FindCar(source, plate)
 		TriggerClientEvent("pNotify:SendNotification", source, { text = "خودرو شما با پلاک " .. plate .. " به پارکینگ گاراژ منتقل شد.", type = "info", timeout = 5000, layout = "bottomCenter"})
 	end)
 end
+
+RegisterServerEvent("car_lock:GiveKeys")
+AddEventHandler("car_lock:GiveKeys", function(vehNet, plate)
+    local src = source
+    local plate = string.upper(plate)
+    table.insert(vehicleOwners, {owner = src, netid = vehNet, plate = plate})
+end)
+
+RegisterServerEvent("car_lock:CheckOwnership")
+AddEventHandler("car_lock:CheckOwnership", function(vehNet, plate)
+    local src = source
+    local plate = string.upper(plate)
+    for i = 1, #vehicleOwners do
+        if vehicleOwners[i].netid == vehNet then
+            if vehicleOwners[i].owner == src then
+                if vehicleOwners[i].plate == plate then
+                    TriggerClientEvent("car_lock:ToggleOutsideLock", src, vehNet, true)
+                end
+            end
+        end
+    end
+    TriggerClientEvent("car_lock:ToggleOutsideLock", src, vehNet, false)
+end)

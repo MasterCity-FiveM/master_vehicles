@@ -349,6 +349,9 @@ function SpawnVehicle(vehicle, spawnLocation)
 	ESX.Game.SpawnVehicle(vehicle.model, spawnLocation.coords, spawnLocation.heading, function(callback_vehicle)
 		SetVehicleProperties(callback_vehicle, vehicle)
 		TaskWarpPedIntoVehicle(GetPlayerPed(-1), callback_vehicle, -1)
+		local vehNet = NetworkGetNetworkIdFromEntity(callback_vehicle)
+		local plate = GetVehicleNumberPlateText(callback_vehicle)
+		TriggerServerEvent("car_lock:GiveKeys", vehNet, plate)
 	end)
 end
 
@@ -496,7 +499,7 @@ function OpenRentMenu(Zone)
 							TaskWarpPedIntoVehicle(PlayerPedId(), vehicle, -1)
 							local vehNet = NetworkGetNetworkIdFromEntity(vehicle)
 							local plate = GetVehicleNumberPlateText(vehicle)
-							TriggerServerEvent("SOSAY_Locking:GiveKeys", vehNet, plate)
+							TriggerServerEvent("car_lock:GiveKeys", vehNet, plate)
 							exports.pNotify:SendNotification({text = 'خودرو تحویل داده شد، بخشی از هزینه شما، در هنگام تحویل خودرو برگردانده می شود.', type = "success", timeout = 5000})
 						end)
 					end
@@ -793,4 +796,162 @@ Citizen.CreateThread(function()
 	LoadInterior(interiorID)
 	EnableInteriorProp(interiorID, 'csr_beforeMission') -- Load large window
 	RefreshInterior(interiorID)
+end)
+
+function lockAnimation()
+    local ply = PlayerPedId()
+    RequestAnimDict("anim@heists@keycard@")
+    while not HasAnimDictLoaded("anim@heists@keycard@") do
+        Wait(0)
+    end
+    TaskPlayAnim(ply, "anim@heists@keycard@", "exit", 8.0, 1.0, -1, 16, 0, 0, 0, 0)
+    Wait(800)
+    ClearPedTasks(ply)
+end
+
+function GetClosestPlayer()
+	local players = GetPlayers()
+	local closestDistance = -1
+	local closestPlayer = -1
+	local ply = PlayerPedId()
+	local plyCoords = GetEntityCoords(ply, 0)
+
+	for index,value in ipairs(players) do
+		local target = GetPlayerPed(value)
+		if(target ~= ply) then
+			local targetCoords = GetEntityCoords(GetPlayerPed(value), 0)
+			local distance = Vdist(targetCoords["x"], targetCoords["y"], targetCoords["z"], plyCoords["x"], plyCoords["y"], plyCoords["z"])
+			if(closestDistance == -1 or closestDistance > distance) then
+				closestPlayer = value
+				closestDistance = distance
+			end
+		end
+	end
+
+	return closestPlayer, closestDistance
+end
+
+function GetPlayers()
+    local players = {}
+
+    for i = 0, 256 do
+        if NetworkIsPlayerActive(i) then
+            table.insert(players, i)
+        end
+    end
+
+    return players
+end
+
+function GetVehicleInFront()
+	local plyCoords = GetEntityCoords(GetPlayerPed(PlayerId()), false)
+	local plyOffset = GetOffsetFromEntityInWorldCoords(GetPlayerPed(PlayerId()), 0.0, 5.0, 0.0)
+	local rayHandle = StartShapeTestCapsule(plyCoords.x, plyCoords.y, plyCoords.z, plyOffset.x, plyOffset.y, plyOffset.z, 1.0, 10, GetPlayerPed(PlayerId()), 7)
+	local _, _, _, _, vehicle = GetShapeTestResult(rayHandle)
+	return vehicle
+end
+
+function GetClosestVeh()
+	local ply = GetPlayerPed(-1)
+    local plyCoords = GetEntityCoords(ply, 0)
+    local entityWorld = GetOffsetFromEntityInWorldCoords(ply, 0.0, 20.0, 0.0)
+    local rayHandle = CastRayPointToPoint(plyCoords["x"], plyCoords["y"], plyCoords["z"], entityWorld.x, entityWorld.y, entityWorld.z, 10, ply, 0)
+    local a, b, c, d, targetVehicle = GetRaycastResult(rayHandle)
+
+    return targetVehicle
+end
+
+RegisterNetEvent("car_lock:ToggleOutsideLock")
+AddEventHandler("car_lock:ToggleOutsideLock", function(vehNet, hasKeys)
+    if hasKeys then
+        local veh = NetworkGetEntityFromNetworkId(vehNet)
+        local isLocked = GetVehicleDoorLockStatus(veh)
+        if isLocked == 0 then		
+			exports.pNotify:SendNotification({text = "خودرو قفل شد.", type = "error", timeout = 4000})
+            lockAnimation()
+			TriggerServerEvent("InteractSound_SV:PlayWithinDistance", 5, "lock", 0.2)
+            SetVehicleDoorsLocked(veh, 2)
+            SetVehicleLights(veh, 2)
+            Wait(200)
+            SetVehicleLights(veh, 0)
+        elseif isLocked == 1 then
+			exports.pNotify:SendNotification({text = "خودرو قفل شد.", type = "error", timeout = 4000})
+            lockAnimation()
+			TriggerServerEvent("InteractSound_SV:PlayWithinDistance", 5, "lock", 0.2)
+            SetVehicleDoorsLocked(veh, 2)
+            SetVehicleLights(veh, 2)
+            Wait(200)
+            SetVehicleLights(veh, 0)
+        elseif isLocked == 5 then
+			exports.pNotify:SendNotification({text = "خودرو قفل شد.", type = "error", timeout = 4000})
+            lockAnimation()
+			TriggerServerEvent("InteractSound_SV:PlayWithinDistance", 5, "lock", 0.2)
+            SetVehicleDoorsLocked(veh, 2)
+            SetVehicleLights(veh, 2)
+            Wait(200)
+            SetVehicleLights(veh, 0)
+        else
+			exports.pNotify:SendNotification({text = "قفل خودرو باز شد.", type = "success", timeout = 4000})
+            lockAnimation()
+			TriggerServerEvent("InteractSound_SV:PlayWithinDistance", 5, "unlock", 0.2)
+            SetVehicleDoorsLocked(veh, 0)
+            SetVehicleLights(veh, 2)
+            Wait(200)
+            SetVehicleLights(veh, 0)
+        end
+    end
+end)
+
+Citizen.CreateThread(function()
+    while true do
+        local ply = PlayerPedId()
+        if DoesEntityExist(GetVehiclePedIsTryingToEnter(ply)) then
+            local veh = GetVehiclePedIsTryingToEnter(ply)
+            local isLocked = GetVehicleDoorLockStatus(veh)
+            if isLocked == 7 then
+                SetVehicleDoorsLocked(veh, 2)
+            end
+
+            if isLocked == 4 then
+                ClearPedTasks(ply)
+            end
+
+            local aiPed = GetPedInVehicleSeat(veh, -1)
+            if aiPed then
+                SetPedCanBeDraggedOut(aiPed, false)
+            end
+        end
+		
+        if IsControlJustPressed(0, 246) and GetLastInputMethod(0) then
+            local insideVeh = IsPedInAnyVehicle(ply, false)
+
+            if insideVeh == 1 then
+                local veh = GetVehiclePedIsIn(ply, false)
+                local isLocked = GetVehicleDoorLockStatus(veh)
+                if isLocked == 0 then
+                    SetVehicleDoorsLocked(veh, 2)
+					exports.pNotify:SendNotification({text = "خودرو قفل شد.", type = "error", timeout = 4000})
+                elseif isLocked == 1 then
+                    SetVehicleDoorsLocked(veh, 2)
+					exports.pNotify:SendNotification({text = "خودرو قفل شد.", type = "error", timeout = 4000})
+                elseif isLocked == 5 then
+                    SetVehicleDoorsLocked(veh, 2)
+					exports.pNotify:SendNotification({text = "خودرو قفل شد.", type = "error", timeout = 4000})
+                else
+                    SetVehicleDoorsLocked(veh, 0)
+					exports.pNotify:SendNotification({text = "قفل خودرو باز شد.", type = "success", timeout = 4000})
+                end
+            else
+                local inFront = GetVehicleInFront()
+                if inFront ~= 0 then
+                    local vehNet = NetworkGetNetworkIdFromEntity(inFront)
+                    local plate = GetVehicleNumberPlateText(inFront)
+                    if vehNet ~= 0 then
+                        TriggerServerEvent("car_lock:CheckOwnership", vehNet, plate)
+                    end
+                end
+            end
+        end
+        Wait(0)
+    end
 end)
