@@ -312,7 +312,7 @@ function OpenGarageMenu(Zone)
 		else
 			exports.pNotify:SendNotification({text = 'شما ماشینی در پارکینگ ندارید!', type = "error", timeout = 4000})
 		end
-	end, 'cars')
+	end, 'cars', false)
 end
 
 function GetCarFromGarage(Zone, plate)
@@ -341,8 +341,10 @@ function GetCarFromGarage(Zone, plate)
 			exports.pNotify:SendNotification({text = 'این خودرو به زودی به گاراژ منتقل میشود.', type = "error", timeout = 4000})
 		elseif status == 4 then
 			exports.pNotify:SendNotification({text = 'خودرو شما در حال انتقال به پارکینگ می باشد، لطفا صبور باشید.', type = "info", timeout = 4000})
+		elseif status == 5 then
+			exports.pNotify:SendNotification({text = 'شما پول کافی ندارید.', type = "info", timeout = 4000})
 		end
-	end, plate)
+	end, plate, false)
 end
 
 function SpawnVehicle(vehicle, spawnLocation)
@@ -385,7 +387,7 @@ function StoreVehicleToGarage()
 						else
 							exports.pNotify:SendNotification({text = "شما امکان تحویل این خودرو به گاراژ را ندارید.", type = "error", timeout = 4000})
 						end
-					end, vehicleProps)
+					end, vehicleProps, false)
 				else 
 					exports.pNotify:SendNotification({text = "شما باید پشت فرمان باشید.", type = "error", timeout = 4000})
 				end
@@ -597,25 +599,78 @@ function OpenShopMenu()
 		}}, function(data2, menu2)
 			if data2.current.value == 'yes' then
 				local generatedPlate = GeneratePlate()
+				ESX.TriggerServerCallback('master_gang:isInGang', function(isInGang)
+					if isInGang == true then
+						ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'gang_confirm', {
+							title = "آیا میخواهید این خودرو را باری گنگ بخرید؟",
+							align = 'top-left',
+							elements = {
+								{label = _U('no'),  value = 'no'},
+								{label = _U('yes'), value = 'yes'}
+						}}, function(data3, menu3)
+							if data3.current.value == 'yes' then
+								ESX.TriggerServerCallback('esx_vehicleshop:buyVehicle', function(success)
+									if success then
+										IsInShopMenu = false
+										menu3.close()
+										menu2.close()
+										menu.close()
+										DeleteDisplayVehicleInsideShop()
 
-				ESX.TriggerServerCallback('esx_vehicleshop:buyVehicle', function(success)
-					if success then
-						IsInShopMenu = false
-						menu2.close()
-						menu.close()
-						DeleteDisplayVehicleInsideShop()
+										ESX.Game.SpawnVehicle(vehicleData.model, Config.Zones.ShopOutside.Pos, Config.Zones.ShopOutside.Heading, function(vehicle)
+											TaskWarpPedIntoVehicle(playerPed, vehicle, -1)
+											SetVehicleNumberPlateText(vehicle, generatedPlate)
 
-						ESX.Game.SpawnVehicle(vehicleData.model, Config.Zones.ShopOutside.Pos, Config.Zones.ShopOutside.Heading, function(vehicle)
-							TaskWarpPedIntoVehicle(playerPed, vehicle, -1)
-							SetVehicleNumberPlateText(vehicle, generatedPlate)
+											FreezeEntityPosition(playerPed, false)
+											SetEntityVisible(playerPed, true)
+										end)
+									else
+										exports.pNotify:SendNotification({text = _U('not_enough_money'), type = "error", timeout = 4000})
+									end
+								end,  vehicleData.model, generatedPlate, true)
+							else
+								ESX.TriggerServerCallback('esx_vehicleshop:buyVehicle', function(success)
+									if success then
+										IsInShopMenu = false
+										menu3.close()
+										menu2.close()
+										menu.close()
+										DeleteDisplayVehicleInsideShop()
 
-							FreezeEntityPosition(playerPed, false)
-							SetEntityVisible(playerPed, true)
+										ESX.Game.SpawnVehicle(vehicleData.model, Config.Zones.ShopOutside.Pos, Config.Zones.ShopOutside.Heading, function(vehicle)
+											TaskWarpPedIntoVehicle(playerPed, vehicle, -1)
+											SetVehicleNumberPlateText(vehicle, generatedPlate)
+
+											FreezeEntityPosition(playerPed, false)
+											SetEntityVisible(playerPed, true)
+										end)
+									else
+										exports.pNotify:SendNotification({text = _U('not_enough_money'), type = "error", timeout = 4000})
+									end
+								end,  vehicleData.model, generatedPlate, false)
+							end
 						end)
 					else
-						exports.pNotify:SendNotification({text = _U('not_enough_money'), type = "error", timeout = 4000})
+						ESX.TriggerServerCallback('esx_vehicleshop:buyVehicle', function(success)
+							if success then
+								IsInShopMenu = false
+								menu2.close()
+								menu.close()
+								DeleteDisplayVehicleInsideShop()
+
+								ESX.Game.SpawnVehicle(vehicleData.model, Config.Zones.ShopOutside.Pos, Config.Zones.ShopOutside.Heading, function(vehicle)
+									TaskWarpPedIntoVehicle(playerPed, vehicle, -1)
+									SetVehicleNumberPlateText(vehicle, generatedPlate)
+
+									FreezeEntityPosition(playerPed, false)
+									SetEntityVisible(playerPed, true)
+								end)
+							else
+								exports.pNotify:SendNotification({text = _U('not_enough_money'), type = "error", timeout = 4000})
+							end
+						end,  vehicleData.model, generatedPlate, false)
 					end
-				end,  vehicleData.model, generatedPlate)
+				end)
 			else
 				menu2.close()
 			end

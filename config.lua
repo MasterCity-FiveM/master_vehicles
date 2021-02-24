@@ -122,6 +122,7 @@ Config.GarageMarkerColor = {r = 66, g = 245, b = 149}
 Config.GarageType    = 36
 Config.GetCarPrice   = 100
 Config.FindCarPrice   = 1000
+Config.FindGangCarPrice   = 3000
 
 Config.GarageLocations = {
 	Main = {
