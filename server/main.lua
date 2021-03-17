@@ -481,6 +481,7 @@ AddEventHandler("car_lock:CheckOwnership", function(vehNet, plate)
 	
 	if plate == nil then
 		TriggerClientEvent("car_lock:ToggleOutsideLock", src, vehNet, false)
+		return
 	end
 	
     local plate = string.upper(plate)
