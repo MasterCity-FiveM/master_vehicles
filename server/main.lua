@@ -42,14 +42,17 @@ function getVehicleLabelFromModel(model)
 end
 
 ESX.RegisterServerCallback('esx_vehicleshop:getCategories', function(source, cb)
+	ESX.RunCustomFunction("anti_ddos", source, 'esx_vehicleshop:getCategories', {})
 	cb(categories)
 end)
 
 ESX.RegisterServerCallback('esx_vehicleshop:getVehicles', function(source, cb)
+	ESX.RunCustomFunction("anti_ddos", source, 'esx_vehicleshop:getVehicles', {})
 	cb(vehicles)
 end)
 
 ESX.RegisterServerCallback('esx_vehicleshop:buyVehicle', function(source, cb, model, plate, forGang)
+	ESX.RunCustomFunction("anti_ddos", source, 'esx_vehicleshop:buyVehicle', {model = model, plate = plate, forGang = forGang})
 	local xPlayer = ESX.GetPlayerFromId(source)
 	local modelPrice
 
@@ -100,6 +103,7 @@ ESX.RegisterServerCallback('esx_vehicleshop:buyVehicle', function(source, cb, mo
 end)
 
 ESX.RegisterServerCallback('esx_vehicleshop:isPlateTaken', function(source, cb, plate)
+	ESX.RunCustomFunction("anti_ddos", source, 'esx_vehicleshop:isPlateTaken', {plate = plate})
 	MySQL.Async.fetchAll('SELECT 1 FROM owned_vehicles WHERE plate = @plate', {
 		['@plate'] = plate
 	}, function(result)
@@ -108,6 +112,7 @@ ESX.RegisterServerCallback('esx_vehicleshop:isPlateTaken', function(source, cb, 
 end)
 
 ESX.RegisterServerCallback('esx_vehicleshop:retrieveJobGradeVehicles', function(source, cb, vtype)
+	ESX.RunCustomFunction("anti_ddos", source, 'esx_vehicleshop:retrieveJobGradeVehicles', {vtype = vtype})
 	local xPlayer = ESX.GetPlayerFromId(source)
 	
 	if xPlayer.job.name == nil or xPlayer.job.grade_name == nil then
@@ -163,6 +168,7 @@ ESX.RegisterServerCallback('esx_vehicleshop:retrieveJobGradeVehicles', function(
 end)
 
 ESX.RegisterServerCallback('esx_vehicleshop:RentCar', function(source, cb)
+	ESX.RunCustomFunction("anti_ddos", source, 'esx_vehicleshop:RentCar', {})
 	local xPlayer = ESX.GetPlayerFromId(source)
 	
 	if xPlayer.getMoney() >= Config.RentPrice then
@@ -179,6 +185,7 @@ ESX.RegisterServerCallback('esx_vehicleshop:RentCar', function(source, cb)
 end)
 
 ESX.RegisterServerCallback('esx_vehicleshop:returnRentCar', function(source, cb, plate, vehiclesTmp)
+	ESX.RunCustomFunction("anti_ddos", source, 'esx_vehicleshop:returnRentCar', {plate = plate})
 	local xPlayer = ESX.GetPlayerFromId(source)
 	
 	if plate ~= nil and RentCars[plate] ~= nil and RentCars[plate] == source then
@@ -193,6 +200,7 @@ ESX.RegisterServerCallback('esx_vehicleshop:returnRentCar', function(source, cb,
 end)
 
 ESX.RegisterServerCallback('esx_vehicleshop:ChangeCarOwner', function(source, cb, plate, target)
+	ESX.RunCustomFunction("anti_ddos", source, 'esx_vehicleshop:ChangeCarOwner', {plate = plate, target = target})
 	local xPlayer = ESX.GetPlayerFromId(source)
 	local tPlayer = ESX.GetPlayerFromId(target)
 	
@@ -230,6 +238,7 @@ ESX.RegisterServerCallback('esx_vehicleshop:ChangeCarOwner', function(source, cb
 end)
 
 ESX.RegisterServerCallback('master_vehicles:getOwnedVehicles', function(source, cb, type, isGang)
+	ESX.RunCustomFunction("anti_ddos", source, 'master_vehicles:getOwnedVehicles', {type = type, isGang = isGang})
 	local xPlayer = ESX.GetPlayerFromId(source)
 	OwnedCars = {}
 	if type == 'cars' then
@@ -286,6 +295,7 @@ end)
 
 -- Store Vehicles
 ESX.RegisterServerCallback('master_vehicles:storeVehicle', function (source, cb, vehicleProps, isGang)
+	ESX.RunCustomFunction("anti_ddos", source, 'master_vehicles:storeVehicle', {isGang = isGang})
 	local ownedCars = {}
 	local vehplate = vehicleProps.plate:match("^%s*(.-)%s*$")
 	local vehiclemodel = vehicleProps.model
@@ -350,6 +360,7 @@ ESX.RegisterServerCallback('master_vehicles:storeVehicle', function (source, cb,
 end)
 
 ESX.RegisterServerCallback('master_vehicles:SpawnGarageCar', function (source, cb, plate, isGang)
+	ESX.RunCustomFunction("anti_ddos", source, 'master_vehicles:SpawnGarageCar', {plate = plate, isGang = isGang})
 	local xPlayer = ESX.GetPlayerFromId(source)
 	
 	if isGang == true then
@@ -470,6 +481,7 @@ end
 
 RegisterServerEvent("car_lock:GiveKeys")
 AddEventHandler("car_lock:GiveKeys", function(vehNet, plate)
+	ESX.RunCustomFunction("anti_ddos", source, 'car_lock:GiveKeys', {plate = plate})
     local src = source
     local plate = string.upper(plate)
     table.insert(vehicleOwners, {owner = src, netid = vehNet, plate = plate})
@@ -477,6 +489,7 @@ end)
 
 RegisterServerEvent("car_lock:CheckOwnership")
 AddEventHandler("car_lock:CheckOwnership", function(vehNet, plate)
+	ESX.RunCustomFunction("anti_ddos", source, 'car_lock:CheckOwnership', {plate = plate})
     local src = source
 	
 	if plate == nil then
