@@ -657,6 +657,9 @@ function OpenShopMenu()
 
 											FreezeEntityPosition(playerPed, false)
 											SetEntityVisible(playerPed, true)
+											local vehNet = NetworkGetNetworkIdFromEntity(vehicle)
+											local plate = GetVehicleNumberPlateText(vehicle)
+											TriggerServerEvent("car_lock:GiveKeys", vehNet, plate)
 										end)
 									else
 										exports.pNotify:SendNotification({text = _U('not_enough_money'), type = "error", timeout = 4000})
@@ -678,6 +681,9 @@ function OpenShopMenu()
 
 									FreezeEntityPosition(playerPed, false)
 									SetEntityVisible(playerPed, true)
+									local vehNet = NetworkGetNetworkIdFromEntity(vehicle)
+									local plate = GetVehicleNumberPlateText(vehicle)
+									TriggerServerEvent("car_lock:GiveKeys", vehNet, plate)
 								end)
 							else
 								exports.pNotify:SendNotification({text = _U('not_enough_money'), type = "error", timeout = 4000})
