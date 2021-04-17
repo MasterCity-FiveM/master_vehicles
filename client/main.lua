@@ -148,21 +148,21 @@ Citizen.CreateThread(function()
 			local currentZone
 			local ActionType = false
 
-			--for k,v in pairs(Config.Zones) do
-			local distance = #(playerCoords - v.Pos)
+			for k,v in pairs(Config.Zones) do
+				local distance = #(playerCoords - v.Pos)
 
-			if distance < Config.DrawDistance then
-				letSleep = false
+				if distance < Config.DrawDistance then
+					letSleep = false
 
-				if v.Type ~= -1 then
-					DrawMarker(v.Type, v.Pos, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, v.Size.x, v.Size.y, v.Size.z, Config.MarkerColor.r, Config.MarkerColor.g, Config.MarkerColor.b, 100, false, true, 2, false, nil, nil, false)
-				end
+					if v.Type ~= -1 then
+						DrawMarker(v.Type, v.Pos, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, v.Size.x, v.Size.y, v.Size.z, Config.MarkerColor.r, Config.MarkerColor.g, Config.MarkerColor.b, 100, false, true, 2, false, nil, nil, false)
+					end
 
-				if distance < v.Size.x then
-					isInMarker, currentZone = true, k
+					if distance < v.Size.x then
+						isInMarker, currentZone = true, k
+					end
 				end
 			end
-			--end
 			
 			--if letSleep then
 			for k,v in pairs(Config.RentLocations) do
@@ -270,14 +270,22 @@ end)
 
 function GetAvailableVehicleSpawnPoint(Zone)
 	local spawnPoints = Config.RentLocations[Zone].SpawnPos
+	local spawnLocation = nil
 	local found, foundSpawnPoint = false, nil
-
-	if ESX.Game.IsSpawnPointClear(spawnPoints.coords, spawnPoints.radius) then
-		return true
-	else
-		exports.pNotify:SendNotification({text = 'محل تحویل خودرو خالی نمیباشد.', type = "error", timeout = 4000})	
+	
+	for k,v in pairs(spawnPoints) do
+		if ESX.Game.IsSpawnPointClear(v.coords, v.radius) then
+			spawnLocation = v
+			break
+		end
+	end
+	
+	if spawnLocation == nil then
+		exports.pNotify:SendNotification({text = 'محل تحویل خودرو خالی نمی باشد!', type = "error", timeout = 4000})
 		return false
 	end
+	
+	return spawnLocation
 end
 
 function OpenGarageMenu(Zone)
@@ -491,10 +499,11 @@ function OpenRentMenu(Zone)
 			{label = 'تحویل خودرو', value = 'deliver'}
 	}}, function(data, menu)
 		if data.current.value == 'rent' then
-			if GetAvailableVehicleSpawnPoint(Zone) then
+			local SpawnPoint = GetAvailableVehicleSpawnPoint(Zone)
+			if SpawnPoint ~= false then
 				ESX.TriggerServerCallback('esx_vehicleshop:RentCar', function(success, plate)
 					if success then
-						ESX.Game.SpawnVehicle(Config.RentCar, Config.RentLocations[Zone].SpawnPos.coords, Config.RentLocations[Zone].SpawnPos.heading, function(vehicle)
+						ESX.Game.SpawnVehicle(Config.RentCar, SpawnPoint.coords, SpawnPoint.heading, function(vehicle)
 							local allVehicleProps = {}
 							allVehicleProps.plate = plate
 							
