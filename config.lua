@@ -114,6 +114,20 @@ Config.RentLocations = {
 	BironShahrBalayeBala = { 
 		BlipPos = vector3(-128.2813, 6291.534, 31.33557),
 		SpawnPos = {coords = vector3(-132.4088, 6284.598, 31.33557), heading = 226.44882, radius = 6.0}
+	},
+	BaghalJobCenter = {
+		BlipPos = vector3(-296.3473, -987.2571, 31.06592),
+		SpawnPos = {coords = vector3(-305.367, -989.7626, 31.06592), heading = 340.15747070313, radius = 6.0},
+		SpawnPos = {coords = vector3(-312.0396, -986.1362, 31.06592), heading = 340.15747070313, radius = 6.0},
+		SpawnPos = {coords = vector3(-319.2132, -984.1846, 31.06592), heading = 340.15747070313, radius = 6.0}
+	},
+	NewMining = {
+		BlipPos = vector3(-522.6066, 1991.895, 205.8828),
+		SpawnPos = {coords = vector3(-524.7956, 1985.987, 205.9165), heading = 141.7322845459, radius = 6.0}
+	},
+	ParkingBala = {
+		BlipPos = vector3(234.422, -751.4374, 34.62122),
+		SpawnPos = {coords = vector3(249.8901, -745.3318, 34.62122), heading = 158.74014282227, radius = 6.0}
 	}
 }
 

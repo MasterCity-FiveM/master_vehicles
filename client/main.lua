@@ -144,58 +144,59 @@ Citizen.CreateThread(function()
 		Citizen.Wait(0)
 		if IsInShopMenu == false then
 			local playerCoords = GetEntityCoords(PlayerPedId())
-			local isInMarker, letSleep, currentZone = false, true
+			local isInMarker, letSleep = false, true
+			local currentZone
 			local ActionType = false
 
-			for k,v in pairs(Config.Zones) do
-				local distance = #(playerCoords - v.Pos)
+			--for k,v in pairs(Config.Zones) do
+			local distance = #(playerCoords - v.Pos)
+
+			if distance < Config.DrawDistance then
+				letSleep = false
+
+				if v.Type ~= -1 then
+					DrawMarker(v.Type, v.Pos, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, v.Size.x, v.Size.y, v.Size.z, Config.MarkerColor.r, Config.MarkerColor.g, Config.MarkerColor.b, 100, false, true, 2, false, nil, nil, false)
+				end
+
+				if distance < v.Size.x then
+					isInMarker, currentZone = true, k
+				end
+			end
+			--end
+			
+			--if letSleep then
+			for k,v in pairs(Config.RentLocations) do
+				local distance = #(playerCoords - v.BlipPos)
 
 				if distance < Config.DrawDistance then
 					letSleep = false
 
-					if v.Type ~= -1 then
-						DrawMarker(v.Type, v.Pos, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, v.Size.x, v.Size.y, v.Size.z, Config.MarkerColor.r, Config.MarkerColor.g, Config.MarkerColor.b, 100, false, true, 2, false, nil, nil, false)
-					end
+					DrawMarker(Config.RentType, v.BlipPos, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.RentSize.x, Config.RentSize.y, Config.RentSize.z, Config.RentMarkerColor.r, Config.RentMarkerColor.g, Config.RentMarkerColor.b, 100, false, true, 2, false, nil, nil, false)
 
-					if distance < v.Size.x then
+					if distance < Config.RentSize.x then
 						isInMarker, currentZone = true, k
+						ActionType = 1
 					end
 				end
 			end
+			--end
 			
-			if letSleep then
-				for k,v in pairs(Config.RentLocations) do
-					local distance = #(playerCoords - v.BlipPos)
+			--if letSleep then
+			for k,v in pairs(Config.GarageLocations) do
+				local distance = #(playerCoords - v.BlipPos)
 
-					if distance < Config.DrawDistance then
-						letSleep = false
+				if distance < Config.DrawDistance then
+					letSleep = false
 
-						DrawMarker(Config.RentType, v.BlipPos, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.RentSize.x, Config.RentSize.y, Config.RentSize.z, Config.RentMarkerColor.r, Config.RentMarkerColor.g, Config.RentMarkerColor.b, 100, false, true, 2, false, nil, nil, false)
+					DrawMarker(Config.GarageType, v.BlipPos, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.GarageSize.x, Config.GarageSize.y, Config.GarageSize.z, Config.GarageMarkerColor.r, Config.GarageMarkerColor.g, Config.GarageMarkerColor.b, 100, false, true, 2, false, nil, nil, false)
 
-						if distance < Config.RentSize.x then
-							isInMarker, currentZone = true, k
-							ActionType = 1
-						end
+					if distance < Config.RentSize.x then
+						isInMarker, currentZone = true, k
+						ActionType = 2
 					end
 				end
 			end
-			
-			if letSleep then
-				for k,v in pairs(Config.GarageLocations) do
-					local distance = #(playerCoords - v.BlipPos)
-
-					if distance < Config.DrawDistance then
-						letSleep = false
-
-						DrawMarker(Config.GarageType, v.BlipPos, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, Config.GarageSize.x, Config.GarageSize.y, Config.GarageSize.z, Config.GarageMarkerColor.r, Config.GarageMarkerColor.g, Config.GarageMarkerColor.b, 100, false, true, 2, false, nil, nil, false)
-
-						if distance < Config.RentSize.x then
-							isInMarker, currentZone = true, k
-							ActionType = 2
-						end
-					end
-				end
-			end
+			--end
 
 			if (isInMarker and not HasAlreadyEnteredMarker) or (isInMarker and LastZone ~= currentZone) then
 				HasAlreadyEnteredMarker, LastZone = true, currentZone
@@ -209,7 +210,7 @@ Citizen.CreateThread(function()
 			end
 
 			if letSleep then
-				Citizen.Wait(5000)
+				Citizen.Wait(7000)
 			end
 		end
 	end
@@ -623,6 +624,10 @@ function OpenShopMenu()
 
 											FreezeEntityPosition(playerPed, false)
 											SetEntityVisible(playerPed, true)
+											
+											local vehNet = NetworkGetNetworkIdFromEntity(vehicle)
+											local plate = GetVehicleNumberPlateText(vehicle)
+											TriggerServerEvent("car_lock:GiveKeys", vehNet, plate)
 										end)
 									else
 										exports.pNotify:SendNotification({text = _U('not_enough_money'), type = "error", timeout = 4000})
