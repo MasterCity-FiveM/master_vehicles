@@ -612,7 +612,7 @@ function OpenShopMenu()
 				ESX.TriggerServerCallback('master_gang:isInGang', function(isInGang)
 					if isInGang == true then
 						ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'gang_confirm', {
-							title = "آیا میخواهید این خودرو را باری گنگ بخرید؟",
+							title = "آیا میخواهید این خودرو را برای گنگ بخرید؟",
 							align = 'top-left',
 							elements = {
 								{label = _U('no'),  value = 'no'},
