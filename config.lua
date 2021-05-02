@@ -14,8 +14,8 @@ Config.PlateLetters  = 3
 Config.PlateNumbers  = 3
 Config.PlateUseSpace = true
 
-Config.RentPrice = 800
-Config.RentbackMoney = 600
+Config.RentPrice = 400
+Config.RentbackMoney = 200
 Config.RentCar = 'panto'
 
 Config.ChangeOwnerPrice = 500
@@ -136,9 +136,9 @@ Config.RentLocations = {
 Config.GarageSize    = {x = 1.5, y = 1.5, z = 1.0}
 Config.GarageMarkerColor = {r = 66, g = 245, b = 149}
 Config.GarageType    = 36
-Config.GetCarPrice   = 100
-Config.FindCarPrice   = 1000
-Config.FindGangCarPrice   = 3000
+Config.GetCarPrice   = 10
+Config.FindCarPrice   = 750
+Config.FindGangCarPrice   = 1500
 
 Config.GarageLocations = {
 	Main = {

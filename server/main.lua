@@ -77,6 +77,7 @@ ESX.RegisterServerCallback('esx_vehicleshop:buyVehicle', function(source, cb, mo
 						['@plate']   = plate,
 						['@vehicle'] = json.encode({model = GetHashKey(model), plate = plate})
 					}, function(rowsChanged)
+						TriggerEvent('master_warden:AllowSpawnCar', xPlayer.source)
 						TriggerClientEvent("pNotify:SendNotification", source, { text = "خودرو مخصوص، گنگ خریداری شد!", type = "success", timeout = 5000, layout = "bottomCenter"})
 						cb(true)
 					end)
@@ -93,6 +94,7 @@ ESX.RegisterServerCallback('esx_vehicleshop:buyVehicle', function(source, cb, mo
 				['@plate']   = plate,
 				['@vehicle'] = json.encode({model = GetHashKey(model), plate = plate})
 			}, function(rowsChanged)
+				TriggerEvent('master_warden:AllowSpawnCar', xPlayer.source)
 				TriggerClientEvent("pNotify:SendNotification", source, { text = _U('vehicle_belongs', plate), type = "success", timeout = 5000, layout = "bottomCenter"})
 				cb(true)
 			end)
@@ -174,7 +176,7 @@ ESX.RegisterServerCallback('esx_vehicleshop:RentCar', function(source, cb)
 	if xPlayer.getMoney() >= Config.RentPrice then
 		plate = 'R' .. LastRentID
 		RentCars[plate] = source
-		
+		TriggerEvent('master_warden:AllowSpawnCar', xPlayer.source)
 		LastRentID = LastRentID + 1
 		xPlayer.removeMoney(Config.RentPrice)
 		cb(true, plate)
@@ -381,6 +383,7 @@ ESX.RegisterServerCallback('master_vehicles:SpawnGarageCar', function (source, c
 								['@plate'] = plate
 							}, function (rowsChanged)
 								local vehicleData = json.decode(result[1].vehicle)
+								TriggerEvent('master_warden:AllowSpawnCar', xPlayer.source)
 								cb(1, vehicleData)
 							end)
 						else
