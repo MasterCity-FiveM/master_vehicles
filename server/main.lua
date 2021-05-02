@@ -420,6 +420,7 @@ ESX.RegisterServerCallback('master_vehicles:SpawnGarageCar', function (source, c
 					}, function (rowsChanged)
 						xPlayer.removeMoney(Config.GetCarPrice)
 						local vehicleData = json.decode(result[1].vehicle)
+						TriggerEvent('master_warden:AllowSpawnCar', xPlayer.source)
 						cb(1, vehicleData)
 					end)
 				elseif result[1].stored == 1 and xPlayer.getMoney() < Config.GetCarPrice then
