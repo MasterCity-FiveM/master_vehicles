@@ -130,6 +130,10 @@ Config.RentLocations = {
 	ParkingBala = {
 		BlipPos = vector3(234.422, -751.4374, 34.62122),
 		SpawnPos = {{coords = vector3(249.8901, -745.3318, 34.62122), heading = 158.74014282227, radius = 6.0}}
+	},
+	Carshop = {
+		BlipPos = vector3(-59.18242, -1115.209, 26.43225),
+		SpawnPos = {{coords = vector3(-59.18242, -1115.209, 26.43225), heading = 0.0, radius = 6.0}}
 	}
 }
 

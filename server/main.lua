@@ -105,7 +105,7 @@ ESX.RegisterServerCallback('esx_vehicleshop:buyVehicle', function(source, cb, mo
 end)
 
 ESX.RegisterServerCallback('esx_vehicleshop:isPlateTaken', function(source, cb, plate)
-	ESX.RunCustomFunction("anti_ddos", source, 'esx_vehicleshop:isPlateTaken', {plate = plate})
+	--ESX.RunCustomFunction("anti_ddos", source, 'esx_vehicleshop:isPlateTaken', {plate = plate})
 	MySQL.Async.fetchAll('SELECT 1 FROM owned_vehicles WHERE plate = @plate', {
 		['@plate'] = plate
 	}, function(result)
