@@ -490,12 +490,6 @@ AddEventHandler("car_lock:GiveKeys", function(vehNet, plate)
     local plate = string.upper(plate)
 	local xPlayer = ESX.GetPlayerFromId(source)
 	
-    for i = 1, #vehicleOwners do
-        if vehicleOwners[i].netid == vehNet then
-            vehicleOwners[i] = nil
-        end
-    end
-	
     table.insert(vehicleOwners, {owner = xPlayer.identifier, netid = vehNet, plate = plate})
 end)
 
@@ -511,12 +505,8 @@ AddEventHandler("car_lock:CheckOwnership", function(vehNet, plate)
 	
     local plate = string.upper(plate)
     for i = 1, #vehicleOwners do
-        if vehicleOwners[i].netid == vehNet then
-            if vehicleOwners[i].owner == xPlayer.identifier then
-                if vehicleOwners[i].plate == plate then
-                    TriggerClientEvent("car_lock:ToggleOutsideLock", src, vehNet, true)
-                end
-            end
+        if vehicleOwners[i].netid == vehNet and vehicleOwners[i].owner == xPlayer.identifier and vehicleOwners[i].plate == plate then
+            TriggerClientEvent("car_lock:ToggleOutsideLock", src, vehNet, true)
         end
     end
     TriggerClientEvent("car_lock:ToggleOutsideLock", src, vehNet, false)
