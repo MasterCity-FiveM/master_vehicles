@@ -488,14 +488,22 @@ AddEventHandler("car_lock:GiveKeys", function(vehNet, plate)
 	ESX.RunCustomFunction("anti_ddos", source, 'car_lock:GiveKeys', {plate = plate})
     local src = source
     local plate = string.upper(plate)
-    table.insert(vehicleOwners, {owner = src, netid = vehNet, plate = plate})
+	local xPlayer = ESX.GetPlayerFromId(source)
+	
+    for i = 1, #vehicleOwners do
+        if vehicleOwners[i].netid == vehNet then
+            vehicleOwners[i] = nil
+        end
+    end
+	
+    table.insert(vehicleOwners, {owner = xPlayer.identifier, netid = vehNet, plate = plate})
 end)
 
 RegisterServerEvent("car_lock:CheckOwnership")
 AddEventHandler("car_lock:CheckOwnership", function(vehNet, plate)
-	ESX.RunCustomFunction("anti_ddos", source, 'car_lock:CheckOwnership', {plate = plate})
+	--ESX.RunCustomFunction("anti_ddos", source, 'car_lock:CheckOwnership', {plate = plate})
     local src = source
-	
+	local xPlayer = ESX.GetPlayerFromId(source)
 	if plate == nil then
 		TriggerClientEvent("car_lock:ToggleOutsideLock", src, vehNet, false)
 		return
@@ -504,7 +512,7 @@ AddEventHandler("car_lock:CheckOwnership", function(vehNet, plate)
     local plate = string.upper(plate)
     for i = 1, #vehicleOwners do
         if vehicleOwners[i].netid == vehNet then
-            if vehicleOwners[i].owner == src then
+            if vehicleOwners[i].owner == xPlayer.identifier then
                 if vehicleOwners[i].plate == plate then
                     TriggerClientEvent("car_lock:ToggleOutsideLock", src, vehNet, true)
                 end

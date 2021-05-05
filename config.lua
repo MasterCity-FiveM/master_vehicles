@@ -141,7 +141,7 @@ Config.GarageSize    = {x = 1.5, y = 1.5, z = 1.0}
 Config.GarageMarkerColor = {r = 66, g = 245, b = 149}
 Config.GarageType    = 36
 Config.GetCarPrice   = 10
-Config.FindCarPrice   = 750
+Config.FindCarPrice   = 450
 Config.FindGangCarPrice   = 1500
 
 Config.GarageLocations = {
