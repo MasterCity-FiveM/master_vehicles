@@ -451,12 +451,13 @@ end)
 
 function FindCar(source, plate, GangName)
 	Citizen.CreateThread(function()
-		local xPlayer = ESX.GetPlayerFromId(source)
+		local _source = source
+		local xPlayer = ESX.GetPlayerFromId(_source)
 		local plate_key = plate:gsub( " ", "_")
 		if CarsNeedToFind[plate_key] ~= nil then
 			return
 		end
-		CarsNeedToFind[plate_key] = source
+		CarsNeedToFind[plate_key] = _source
 		
 		if GangName ~= nil then
 			xPlayer.removeMoney(Config.FindGangCarPrice)
@@ -464,9 +465,10 @@ function FindCar(source, plate, GangName)
 			xPlayer.removeMoney(Config.FindCarPrice)
 		end
 		
+		Ident = xPlayer.identifier
 		Citizen.Wait(60000)
 		CarsNeedToFind[plate_key] = nil
-		xPlayer = ESX.GetPlayerFromId(source)
+		xPlayer = ESX.GetPlayerFromId(_source)
 		
 		if GangName ~= nil then
 			MySQL.Async.execute('UPDATE owned_vehicles SET stored = 1 WHERE owner = @owner AND plate = @plate', {
@@ -474,15 +476,15 @@ function FindCar(source, plate, GangName)
 				['@plate'] = plate
 			}, function (rowsChanged) end)
 			if xPlayer then
-				TriggerClientEvent("pNotify:SendNotification", source, { text = "خودرو گنگ با پلاک " .. plate .. " به پارکینگ گاراژ منتقل شد.", type = "info", timeout = 5000, layout = "bottomCenter"})
+				TriggerClientEvent("pNotify:SendNotification", xPlayer.source, { text = "خودرو گنگ با پلاک " .. plate .. " به پارکینگ گاراژ منتقل شد.", type = "info", timeout = 5000, layout = "bottomCenter"})
 			end
 		else
 			MySQL.Async.execute('UPDATE owned_vehicles SET stored = 1 WHERE owner = @owner AND plate = @plate', {
-				['@owner'] = xPlayer.identifier,
+				['@owner'] = Ident,
 				['@plate'] = plate
 			}, function (rowsChanged) end)
 			if xPlayer then
-				TriggerClientEvent("pNotify:SendNotification", source, { text = "خودرو شما با پلاک " .. plate .. " به پارکینگ گاراژ منتقل شد.", type = "info", timeout = 5000, layout = "bottomCenter"})
+				TriggerClientEvent("pNotify:SendNotification", xPlayer.source, { text = "خودرو شما با پلاک " .. plate .. " به پارکینگ گاراژ منتقل شد.", type = "info", timeout = 5000, layout = "bottomCenter"})
 			end
 		end
 	end)
