@@ -175,7 +175,7 @@ ESX.RegisterServerCallback('esx_vehicleshop:RentCar', function(source, cb)
 	
 	if xPlayer.getMoney() >= Config.RentPrice then
 		plate = 'R' .. LastRentID
-		RentCars[plate] = source
+		RentCars[plate] = xPlayer.identifier
 		TriggerEvent('master_warden:AllowSpawnCar', xPlayer.source)
 		LastRentID = LastRentID + 1
 		xPlayer.removeMoney(Config.RentPrice)
@@ -190,10 +190,15 @@ ESX.RegisterServerCallback('esx_vehicleshop:returnRentCar', function(source, cb,
 	ESX.RunCustomFunction("anti_ddos", source, 'esx_vehicleshop:returnRentCar', {plate = plate})
 	local xPlayer = ESX.GetPlayerFromId(source)
 	
-	if plate ~= nil and RentCars[plate] ~= nil and RentCars[plate] == source then
+	if plate ~= nil and RentCars[plate] ~= nil and RentCars[plate] == xPlayer.identifier then
 		RentCars[plate] = nil
-		xPlayer.addMoney(Config.RentbackMoney)
-		TriggerClientEvent("pNotify:SendNotification", source, { text = 'الباقی هزینه به شما تحویل داده شد، از شما سپاس گذاریم.', type = "success", timeout = 5000, layout = "bottomCenter"})
+		if xPlayer.get('isNew') and xPlayer.get('isNew') == true then
+			xPlayer.addMoney(Config.RentPrice)
+			TriggerClientEvent("pNotify:SendNotification", source, { text = 'بدلیل اینکه شما تازه وارد این شهر شدید، کل هزینه شما برگردانده شد.', type = "success", timeout = 5000, layout = "bottomCenter"})
+		else
+			xPlayer.addMoney(Config.RentbackMoney)
+			TriggerClientEvent("pNotify:SendNotification", source, { text = 'الباقی هزینه به شما تحویل داده شد، از شما سپاس گذاریم.', type = "success", timeout = 5000, layout = "bottomCenter"})
+		end
 		cb(true)
 	else
 		TriggerClientEvent("pNotify:SendNotification", source, { text = 'شما امکان تحویل این خودرو را ندارید.', type = "error", timeout = 5000, layout = "bottomCenter"})
