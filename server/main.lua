@@ -9,10 +9,10 @@ TriggerEvent('esx:getSharedObject', function(obj) ESX = obj end)
 MySQL.ready(function()
 	MySQL.Async.execute('UPDATE owned_vehicles SET stored = 1 WHERE stored = 0', {}, function (rowsChanged) end)
 	
-	MySQL.Async.fetchAll('SELECT * FROM vehicle_categories', {}, function(_categories)
+	MySQL.Async.fetchAll('SELECT * FROM vehicle_categories ORDER by name ASC', {}, function(_categories)
 		categories = _categories
 
-		MySQL.Async.fetchAll('SELECT * FROM vehicles', {}, function(_vehicles)
+		MySQL.Async.fetchAll('SELECT * FROM vehicles ORDER by category, name ASC', {}, function(_vehicles)
 			vehicles = _vehicles
 
 			for k,v in ipairs(vehicles) do
@@ -371,7 +371,6 @@ ESX.RegisterServerCallback('master_vehicles:SpawnGarageCar', function (source, c
 	local xPlayer = ESX.GetPlayerFromId(source)
 	
 	if isGang == true then
-		
 		ESX.TriggerServerCallback("master_gang:GetGang", source, function(data)
 			DataRecived = true
 			if data == false then
@@ -392,14 +391,21 @@ ESX.RegisterServerCallback('master_vehicles:SpawnGarageCar', function (source, c
 								cb(1, vehicleData)
 							end)
 						else
-							FindCar(source, plate, data.gang)
+							price = Config.FindGangCarPrice
+							veh = json.decode(result[1].vehicle)
+							for k,v in ipairs(vehicles) do
+								if GetHashKey(v.model) == veh.model then
+									price = math.ceil(v.price / 9)
+								end
+							end
+							
 							local plate_key = plate:gsub( " ", "_")
 							if CarsNeedToFind[plate_key] ~= nil then
 								cb(3, nil)
-							elseif xPlayer.getMoney() < Config.FindGangCarPrice then
+							elseif xPlayer.getMoney() < price then
 								cb(5, nil)
 							else
-								FindCar(source, plate, data.gang)
+								FindCar(source, plate, data.gang, price)
 								cb(4, nil)
 							end
 						end
@@ -431,13 +437,21 @@ ESX.RegisterServerCallback('master_vehicles:SpawnGarageCar', function (source, c
 				elseif result[1].stored == 1 and xPlayer.getMoney() < Config.GetCarPrice then
 					cb(5, nil)
 				else
+					price = Config.FindCarPrice
+					veh = json.decode(result[1].vehicle)
+					for k,v in ipairs(vehicles) do
+						if GetHashKey(v.model) == veh.model then
+							price = math.ceil(v.price / 10)
+						end
+					end
+					
 					local plate_key = plate:gsub( " ", "_")
 					if CarsNeedToFind[plate_key] ~= nil then
 						cb(3, nil)
-					elseif xPlayer.getMoney() < Config.FindCarPrice then
+					elseif xPlayer.getMoney() < price then
 						cb(5, nil)
 					else
-						FindCar(source, plate, nil)
+						FindCar(source, plate, nil, price)
 						cb(4, nil)
 					end
 				end
@@ -449,7 +463,7 @@ ESX.RegisterServerCallback('master_vehicles:SpawnGarageCar', function (source, c
 	end
 end)
 
-function FindCar(source, plate, GangName)
+function FindCar(source, plate, GangName, price)
 	Citizen.CreateThread(function()
 		local _source = source
 		local xPlayer = ESX.GetPlayerFromId(_source)
@@ -460,9 +474,9 @@ function FindCar(source, plate, GangName)
 		CarsNeedToFind[plate_key] = _source
 		
 		if GangName ~= nil then
-			xPlayer.removeMoney(Config.FindGangCarPrice)
+			xPlayer.removeMoney(price)
 		else
-			xPlayer.removeMoney(Config.FindCarPrice)
+			xPlayer.removeMoney(price)
 		end
 		
 		Ident = xPlayer.identifier

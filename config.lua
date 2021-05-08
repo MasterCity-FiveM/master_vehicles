@@ -29,7 +29,7 @@ Config.Zones = {
 	},
 	-- DISPLAY CAR
 	ShopInside = {
-		Pos     = vector3(-47.5, -1097.2, 25.4),
+		Pos     = vector3(404.90, -949.58, -99.71),
 		Size    = {x = 1.5, y = 1.5, z = 1.0},
 		Heading = -20.0,
 		Type    = -1

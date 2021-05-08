@@ -297,7 +297,15 @@ function OpenGarageMenu(Zone)
 					if v.data.stored == 1 then
 						table.insert(menuElements, {label = 'تحویل خودرو: <span style="color: #ff96ef">' .. GetDisplayNameFromVehicleModel(v.vehicle.model) .. '</span> - <span style="color: #85fffb">' .. v.vehicle.plate .. '</span> <span style="color: #8cff7a">(' .. Config.GetCarPrice .. '$)</span>',  value = v.vehicle.plate})
 					else
-						table.insert(menuElements, {label = 'تحویل خودرو: <span style="color: #ff96ef">' .. GetDisplayNameFromVehicleModel(v.vehicle.model) .. '</span> - <span style="color: #85fffb">' .. v.vehicle.plate .. '</span> <span style="color: #8cff7a">(' .. Config.FindCarPrice .. '$)</span>',  value = v.vehicle.plate})
+				
+						price = Config.FindCarPrice
+						for k2,v2 in ipairs(Vehicles) do
+							if GetHashKey(v2.model) == v.vehicle.model then
+								price = math.ceil(v2.price / 10)
+							end
+						end
+						
+						table.insert(menuElements, {label = 'تحویل خودرو: <span style="color: #ff96ef">' .. GetDisplayNameFromVehicleModel(v.vehicle.model) .. '</span> - <span style="color: #85fffb">' .. v.vehicle.plate .. '</span> <span style="color: #8cff7a">(' .. price .. '$)</span>',  value = v.vehicle.plate})
 					end
 				end
 			end
@@ -616,7 +624,8 @@ function OpenShopMenu()
 							align = 'top-left',
 							elements = {
 								{label = _U('no'),  value = 'no'},
-								{label = _U('yes'), value = 'yes'}
+								{label = _U('yes'), value = 'yes'},
+								{label = 'خروج', value = 'exit'},
 						}}, function(data3, menu3)
 							if data3.current.value == 'yes' then
 								ESX.TriggerServerCallback('esx_vehicleshop:buyVehicle', function(success)
@@ -633,15 +642,45 @@ function OpenShopMenu()
 
 											FreezeEntityPosition(playerPed, false)
 											SetEntityVisible(playerPed, true)
-											
 											local vehNet = NetworkGetNetworkIdFromEntity(vehicle)
 											local plate = GetVehicleNumberPlateText(vehicle)
 											TriggerServerEvent("car_lock:GiveKeys", vehNet, plate)
 										end)
 									else
+										menu3.close()
+										menu2.close()
+										menu.close()
 										exports.pNotify:SendNotification({text = _U('not_enough_money'), type = "error", timeout = 4000})
+										DeleteDisplayVehicleInsideShop()
+										local playerPed = PlayerPedId()
+
+										CurrentAction     = 'shop_menu'
+										CurrentActionMsg  = _U('shop_menu')
+										CurrentActionData = {}
+
+										FreezeEntityPosition(playerPed, false)
+										SetEntityVisible(playerPed, true)
+										SetEntityCoords(playerPed, Config.Zones.ShopEntering.Pos)
+
+										IsInShopMenu = false
 									end
 								end,  vehicleData.model, generatedPlate, true)
+							elseif data3.current.value == 'exit' then
+								menu3.close()
+								menu2.close()
+								menu.close()
+								DeleteDisplayVehicleInsideShop()
+								local playerPed = PlayerPedId()
+
+								CurrentAction     = 'shop_menu'
+								CurrentActionMsg  = _U('shop_menu')
+								CurrentActionData = {}
+
+								FreezeEntityPosition(playerPed, false)
+								SetEntityVisible(playerPed, true)
+								SetEntityCoords(playerPed, Config.Zones.ShopEntering.Pos)
+
+								IsInShopMenu = false
 							else
 								ESX.TriggerServerCallback('esx_vehicleshop:buyVehicle', function(success)
 									if success then
@@ -662,7 +701,22 @@ function OpenShopMenu()
 											TriggerServerEvent("car_lock:GiveKeys", vehNet, plate)
 										end)
 									else
+										menu3.close()
+										menu2.close()
+										menu.close()
 										exports.pNotify:SendNotification({text = _U('not_enough_money'), type = "error", timeout = 4000})
+										DeleteDisplayVehicleInsideShop()
+										local playerPed = PlayerPedId()
+
+										CurrentAction     = 'shop_menu'
+										CurrentActionMsg  = _U('shop_menu')
+										CurrentActionData = {}
+
+										FreezeEntityPosition(playerPed, false)
+										SetEntityVisible(playerPed, true)
+										SetEntityCoords(playerPed, Config.Zones.ShopEntering.Pos)
+
+										IsInShopMenu = false
 									end
 								end,  vehicleData.model, generatedPlate, false)
 							end
@@ -686,16 +740,58 @@ function OpenShopMenu()
 									TriggerServerEvent("car_lock:GiveKeys", vehNet, plate)
 								end)
 							else
+								menu2.close()
+								menu.close()
 								exports.pNotify:SendNotification({text = _U('not_enough_money'), type = "error", timeout = 4000})
+								DeleteDisplayVehicleInsideShop()
+								local playerPed = PlayerPedId()
+
+								CurrentAction     = 'shop_menu'
+								CurrentActionMsg  = _U('shop_menu')
+								CurrentActionData = {}
+
+								FreezeEntityPosition(playerPed, false)
+								SetEntityVisible(playerPed, true)
+								SetEntityCoords(playerPed, Config.Zones.ShopEntering.Pos)
+
+								IsInShopMenu = false
 							end
 						end,  vehicleData.model, generatedPlate, false)
 					end
 				end)
 			else
 				menu2.close()
+				menu.close()
+				exports.pNotify:SendNotification({text = _U('not_enough_money'), type = "error", timeout = 4000})
+				DeleteDisplayVehicleInsideShop()
+				local playerPed = PlayerPedId()
+
+				CurrentAction     = 'shop_menu'
+				CurrentActionMsg  = _U('shop_menu')
+				CurrentActionData = {}
+
+				FreezeEntityPosition(playerPed, false)
+				SetEntityVisible(playerPed, true)
+				SetEntityCoords(playerPed, Config.Zones.ShopEntering.Pos)
+
+				IsInShopMenu = false
 			end
 		end, function(data2, menu2)
 			menu2.close()
+			menu.close()
+			exports.pNotify:SendNotification({text = _U('not_enough_money'), type = "error", timeout = 4000})
+			DeleteDisplayVehicleInsideShop()
+			local playerPed = PlayerPedId()
+
+			CurrentAction     = 'shop_menu'
+			CurrentActionMsg  = _U('shop_menu')
+			CurrentActionData = {}
+
+			FreezeEntityPosition(playerPed, false)
+			SetEntityVisible(playerPed, true)
+			SetEntityCoords(playerPed, Config.Zones.ShopEntering.Pos)
+
+			IsInShopMenu = false
 		end)
 	end, function(data, menu)
 		menu.close()
