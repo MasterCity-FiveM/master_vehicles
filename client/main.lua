@@ -568,11 +568,11 @@ function OpenShopMenu()
 		end
 	end
 
-	--[[for k,v in pairs(vehiclesByCategory) do
+	for k,v in pairs(vehiclesByCategory) do
 		table.sort(v, function(a, b)
 			return a.name < b.name
 		end)
-	end]]--
+	end
 
 	for i=1, #Categories, 1 do
 		local category         = Categories[i]
@@ -761,37 +761,9 @@ function OpenShopMenu()
 				end)
 			else
 				menu2.close()
-				menu.close()
-				exports.pNotify:SendNotification({text = _U('not_enough_money'), type = "error", timeout = 4000})
-				DeleteDisplayVehicleInsideShop()
-				local playerPed = PlayerPedId()
-
-				CurrentAction     = 'shop_menu'
-				CurrentActionMsg  = _U('shop_menu')
-				CurrentActionData = {}
-
-				FreezeEntityPosition(playerPed, false)
-				SetEntityVisible(playerPed, true)
-				SetEntityCoords(playerPed, Config.Zones.ShopEntering.Pos)
-
-				IsInShopMenu = false
 			end
 		end, function(data2, menu2)
 			menu2.close()
-			menu.close()
-			exports.pNotify:SendNotification({text = _U('not_enough_money'), type = "error", timeout = 4000})
-			DeleteDisplayVehicleInsideShop()
-			local playerPed = PlayerPedId()
-
-			CurrentAction     = 'shop_menu'
-			CurrentActionMsg  = _U('shop_menu')
-			CurrentActionData = {}
-
-			FreezeEntityPosition(playerPed, false)
-			SetEntityVisible(playerPed, true)
-			SetEntityCoords(playerPed, Config.Zones.ShopEntering.Pos)
-
-			IsInShopMenu = false
 		end)
 	end, function(data, menu)
 		menu.close()
