@@ -72,13 +72,12 @@ ESX.RegisterServerCallback('esx_vehicleshop:buyVehicle', function(source, cb, mo
 					cb(false)
 				elseif data.gang ~= nil and data.grade ~= nil and data.grade >= 5 then
 					xPlayer.removeMoney(modelPrice)
+					TriggerEvent('master_warden:AllowSpawnCar', xPlayer.source)
 					MySQL.Async.execute('INSERT INTO owned_vehicles (owner, plate, vehicle) VALUES (@owner, @plate, @vehicle)', {
 						['@owner']   = data.gang,
 						['@plate']   = plate,
 						['@vehicle'] = json.encode({model = GetHashKey(model), plate = plate})
 					}, function(rowsChanged)
-						TriggerEvent('master_warden:AllowSpawnCar', xPlayer.source)
-						Citizen.Wait(300)
 						TriggerClientEvent("pNotify:SendNotification", source, { text = "خودرو مخصوص، گنگ خریداری شد!", type = "success", timeout = 5000, layout = "bottomCenter"})
 						cb(true)
 					end)
@@ -89,14 +88,12 @@ ESX.RegisterServerCallback('esx_vehicleshop:buyVehicle', function(source, cb, mo
 			end, source)
 		else
 			xPlayer.removeMoney(modelPrice)
-
+			TriggerEvent('master_warden:AllowSpawnCar', xPlayer.source)
 			MySQL.Async.execute('INSERT INTO owned_vehicles (owner, plate, vehicle) VALUES (@owner, @plate, @vehicle)', {
 				['@owner']   = xPlayer.identifier,
 				['@plate']   = plate,
 				['@vehicle'] = json.encode({model = GetHashKey(model), plate = plate})
 			}, function(rowsChanged)
-				TriggerEvent('master_warden:AllowSpawnCar', xPlayer.source)
-				Citizen.Wait(300)
 				TriggerClientEvent("pNotify:SendNotification", source, { text = _U('vehicle_belongs', plate), type = "success", timeout = 5000, layout = "bottomCenter"})
 				cb(true)
 			end)
@@ -111,7 +108,11 @@ ESX.RegisterServerCallback('esx_vehicleshop:isPlateTaken', function(source, cb, 
 	MySQL.Async.fetchAll('SELECT 1 FROM owned_vehicles WHERE plate = @plate', {
 		['@plate'] = plate
 	}, function(result)
-		cb(result[1] ~= nil)
+		if result[1] then
+			cb(false)
+		else
+			cb(plate)
+		end
 	end)
 end)
 

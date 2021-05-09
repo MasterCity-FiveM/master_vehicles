@@ -11,7 +11,6 @@ function GeneratePlate()
 	local doBreak = false
 
 	while true do
-		Citizen.Wait(2)
 		math.randomseed(GetGameTimer())
 		if Config.PlateUseSpace then
 			generatedPlate = string.upper(GetRandomLetter(Config.PlateLetters) .. ' ' .. GetRandomNumber(Config.PlateNumbers))
@@ -20,11 +19,13 @@ function GeneratePlate()
 		end
 
 		ESX.TriggerServerCallback('esx_vehicleshop:isPlateTaken', function(isPlateTaken)
-			if not isPlateTaken then
+			if isPlateTaken ~= false then
 				doBreak = true
+				generatedPlate = isPlateTaken
 			end
 		end, generatedPlate)
-
+		
+		Citizen.Wait(200)
 		if doBreak then
 			break
 		end
