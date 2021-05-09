@@ -79,6 +79,7 @@ ESX.RegisterServerCallback('esx_vehicleshop:buyVehicle', function(source, cb, mo
 						['@vehicle'] = json.encode({model = GetHashKey(model), plate = plate})
 					}, function(rowsChanged)
 						TriggerClientEvent("pNotify:SendNotification", source, { text = "خودرو مخصوص، گنگ خریداری شد!", type = "success", timeout = 5000, layout = "bottomCenter"})
+						ESX.RunCustomFunction("discord", source, 'carshop', 'Bought Vehicle for GANG', "Model: **" .. model .. "**\nPlate: **" .. plate .. "**\nGang: **" .. data.gang .. "**")
 						cb(true)
 					end)
 				else
@@ -95,6 +96,7 @@ ESX.RegisterServerCallback('esx_vehicleshop:buyVehicle', function(source, cb, mo
 				['@vehicle'] = json.encode({model = GetHashKey(model), plate = plate})
 			}, function(rowsChanged)
 				TriggerClientEvent("pNotify:SendNotification", source, { text = _U('vehicle_belongs', plate), type = "success", timeout = 5000, layout = "bottomCenter"})
+				ESX.RunCustomFunction("discord", source, 'carshop', 'Bought Vehicle for SELF', "Model: **" .. model .. "**\nPlate: **" .. plate .. "**")
 				cb(true)
 			end)
 		end
