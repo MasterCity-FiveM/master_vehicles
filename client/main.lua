@@ -1045,7 +1045,9 @@ AddEventHandler("car_lock:ToggleOutsideLock", function(vehNet, hasKeys)
     end
 end)
 
+local speedLimited = false
 Citizen.CreateThread(function()
+	local resetSpeedOnEnter = true
     while true do
         local ply = PlayerPedId()
         if DoesEntityExist(GetVehiclePedIsTryingToEnter(ply)) then
@@ -1096,5 +1098,42 @@ Citizen.CreateThread(function()
             end
         end
         Wait(0)
+		
+		local playerPed = GetPlayerPed(-1)
+		local vehicle = GetVehiclePedIsIn(playerPed,false)
+		if GetPedInVehicleSeat(vehicle, -1) == playerPed and IsPedInAnyVehicle(playerPed, false) then
+			-- This should only happen on vehicle first entry to disable any old values
+			if resetSpeedOnEnter then
+				maxSpeed = GetVehicleHandlingFloat(vehicle,"CHandlingData","fInitialDriveMaxFlatVel")
+				SetEntityMaxSpeed(vehicle, maxSpeed)
+				resetSpeedOnEnter = false
+				speedLimited = false
+			end
+			
+			
+			speed = math.ceil(GetEntitySpeed(vehicle) * 3.6)
+			if speed >= 50 and GetPedInVehicleSeat(vehicle, -1) == playerPed then
+                SetPlayerCanDoDriveBy(PlayerId(), false)
+            else
+                SetPlayerCanDoDriveBy(PlayerId(), true)
+            end
+			
+			-- Disable speed limiter
+			if IsControlJustReleased(0,29) and speedLimited then
+				speedLimited = false
+				maxSpeed = GetVehicleHandlingFloat(vehicle,"CHandlingData","fInitialDriveMaxFlatVel")
+				SetEntityMaxSpeed(vehicle, maxSpeed)
+				exports.pNotify:SendNotification({text = 'کروز کنترل خاموش شد.', type = "info", timeout = 4000})
+			-- Enable speed limiter
+			elseif IsControlJustReleased(0,29) and not speedLimited and speed > 1 then
+				speedLimited = true
+				cruise = GetEntitySpeed(vehicle)
+				SetEntityMaxSpeed(vehicle, cruise)
+				cruise = math.floor(cruise * 3.6 + 0.5)					
+				exports.pNotify:SendNotification({text = 'سرعت شما روی ' .. cruise .. ' KM، محدود شد.', type = "info", timeout = 4000})
+			end
+		else
+			resetSpeedOnEnter = true
+		end
     end
 end)
