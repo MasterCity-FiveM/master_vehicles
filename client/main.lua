@@ -570,7 +570,7 @@ function OpenShopMenu()
 	if #Vehicles == 0 then
 		return
 	end
-	
+	TriggerEvent('master_weapons:stopguns')
 	IsInShopMenu = true
 
 	StartShopRestriction()
