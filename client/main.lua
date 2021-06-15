@@ -1198,7 +1198,6 @@ Citizen.CreateThread(function()
 				end
 			end
 			
-			
 			--- IS EMERG VEHICLE ---
 			if GetVehicleClass(veh) == 18 then
 				
