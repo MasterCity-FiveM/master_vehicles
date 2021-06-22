@@ -134,6 +134,10 @@ Config.RentLocations = {
 	Carshop = {
 		BlipPos = vector3(-59.18242, -1115.209, 26.43225),
 		SpawnPos = {{coords = vector3(-59.18242, -1115.209, 26.43225), heading = 0.0, radius = 6.0}}
+	},
+	Truck = { -- Job
+		BlipPos = vector3(1197.402, -3103.899, 6.0271),
+		SpawnPos = {{coords = vector3(1194.923, -3099.969, 5.858643), heading = 31.0, radius = 6.0}}
 	}
 }
 
