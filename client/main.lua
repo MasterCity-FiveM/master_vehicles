@@ -1143,11 +1143,11 @@ Citizen.CreateThread(function()
 			
 			
 			speed = math.ceil(GetEntitySpeed(vehicle) * 3.6)
-			if speed >= 50 and GetPedInVehicleSeat(vehicle, -1) == playerPed then
+			--if speed >= 50 and GetPedInVehicleSeat(vehicle, -1) == playerPed then
                 SetPlayerCanDoDriveBy(PlayerId(), false)
-            else
-                SetPlayerCanDoDriveBy(PlayerId(), true)
-            end
+            --else
+            --    SetPlayerCanDoDriveBy(PlayerId(), true)
+            --end
 			
 			-- Disable speed limiter
 			if IsControlJustReleased(0,29) and speedLimited then
@@ -1164,12 +1164,9 @@ Citizen.CreateThread(function()
 				exports.pNotify:SendNotification({text = 'سرعت شما روی ' .. cruise .. ' KM، محدود شد.', type = "info", timeout = 4000})
 			end
 			
-			
-			
 			-- LUX
 			local playerped = GetPlayerPed(-1)
 			local veh = GetVehiclePedIsUsing(playerped)
-			
 			
 			DisableControlAction(0, 84, true) -- INPUT_VEH_PREV_RADIO_TRACK  
 			DisableControlAction(0, 83, true) -- INPUT_VEH_NEXT_RADIO_TRACK 
