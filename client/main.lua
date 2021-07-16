@@ -1143,11 +1143,8 @@ Citizen.CreateThread(function()
 			
 			
 			speed = math.ceil(GetEntitySpeed(vehicle) * 3.6)
+			SetPlayerCanDoDriveBy(PlayerId(), false)
 			--if speed >= 50 and GetPedInVehicleSeat(vehicle, -1) == playerPed then
-                SetPlayerCanDoDriveBy(PlayerId(), false)
-            --else
-            --    SetPlayerCanDoDriveBy(PlayerId(), true)
-            --end
 			
 			-- Disable speed limiter
 			if IsControlJustReleased(0,29) and speedLimited then
@@ -1435,6 +1432,9 @@ Citizen.CreateThread(function()
 				end
 			
 			end
+		elseif IsPedInAnyVehicle(playerPed, false) then
+			resetSpeedOnEnter = true
+            SetPlayerCanDoDriveBy(PlayerId(), true)
 		else
 			resetSpeedOnEnter = true
 		end
